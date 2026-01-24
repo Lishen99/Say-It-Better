@@ -12,6 +12,8 @@
     { "src": "/api/analyze-themes", "dest": "/api/analyze-themes.py" },
     { "src": "/api/embeddings", "dest": "/api/embeddings.py" },
     { "src": "/api/disclaimer", "dest": "/api/disclaimer.py" },
+    { "src": "/api/cloud", "dest": "/api/cloud.py" },
+    { "src": "/api/cloud/health", "dest": "/api/cloud.py" },
     { "src": "/api", "dest": "/api/index.py" },
     { "src": "/(.*)", "dest": "/frontend/dist/$1" }
   ]

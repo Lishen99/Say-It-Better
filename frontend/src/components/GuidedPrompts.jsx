@@ -62,22 +62,22 @@ function GuidedPrompts({ onSelectPrompt, onClose }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg shadow-soft-200/50 border border-amber-200 overflow-hidden animate-slide-up">
+    <div className="bg-white border-4 border-[#f39c12] shadow-[6px_6px_0px_0px_rgba(243,156,18,0.5)] overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-400 to-amber-500 px-6 py-4">
+      <div className="bg-[#f39c12] px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-white">
             <Lightbulb className="w-5 h-5" />
-            <h3 className="font-medium">Not sure what to write?</h3>
+            <h3 className="font-bold uppercase tracking-wide text-sm">Not sure what to write?</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white text-sm"
+            className="text-white/80 hover:text-white text-sm uppercase tracking-wide font-medium"
           >
-            Hide prompts
+            Hide
           </button>
         </div>
-        <p className="text-amber-100 text-sm mt-1">
+        <p className="text-white/80 text-sm mt-1">
           Start with one of these prompts to help express your thoughts
         </p>
       </div>
@@ -86,7 +86,7 @@ function GuidedPrompts({ onSelectPrompt, onClose }) {
         {/* Random Prompt Button */}
         <button
           onClick={getRandomPrompt}
-          className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl transition-colors border border-amber-200"
+          className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-[#f39c12]/10 hover:bg-[#f39c12]/20 text-[#f39c12] border-2 border-[#f39c12] font-bold uppercase tracking-wide text-sm transition-colors"
         >
           <Shuffle className="w-4 h-4" />
           <span>Give me a random prompt</span>
@@ -95,15 +95,15 @@ function GuidedPrompts({ onSelectPrompt, onClose }) {
         {/* Categories */}
         <div className="space-y-2">
           {PROMPTS.map((category) => (
-            <div key={category.category} className="border border-soft-200 rounded-xl overflow-hidden">
+            <div key={category.category} className="border-2 border-[#2d3436] overflow-hidden">
               <button
                 onClick={() => setSelectedCategory(
                   selectedCategory === category.category ? null : category.category
                 )}
-                className="w-full flex items-center justify-between px-4 py-3 bg-soft-50 hover:bg-soft-100 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 bg-[#f9f5f0] hover:bg-[#e8e3dd] transition-colors"
               >
-                <span className="font-medium text-soft-700">{category.category}</span>
-                <ChevronRight className={`w-4 h-4 text-soft-400 transition-transform ${
+                <span className="font-bold text-[#2d3436] uppercase tracking-wide text-sm">{category.category}</span>
+                <ChevronRight className={`w-4 h-4 text-[#636e72] transition-transform ${
                   selectedCategory === category.category ? 'rotate-90' : ''
                 }`} />
               </button>
@@ -114,7 +114,7 @@ function GuidedPrompts({ onSelectPrompt, onClose }) {
                     <button
                       key={index}
                       onClick={() => onSelectPrompt(prompt)}
-                      className="w-full text-left p-3 rounded-lg bg-soft-50 hover:bg-calm-50 hover:border-calm-200 border border-transparent text-soft-700 text-sm transition-colors"
+                      className="w-full text-left p-3 bg-[#f9f5f0] hover:bg-[#14B8A6]/10 hover:border-[#14B8A6] border-2 border-transparent text-[#636e72] text-sm transition-colors font-serif"
                     >
                       "{prompt}"
                     </button>

@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#50b583;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2d9a68;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <circle cx="50" cy="50" r="45" fill="url(#grad)"/>
-  <path d="M30 45 Q50 30 70 45 Q50 60 30 45" fill="white" opacity="0.9"/>
-  <circle cx="50" cy="48" r="8" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background teal square (rotated) -->
+  <rect x="8" y="8" width="48" height="48" rx="4" fill="#14B8A6" transform="rotate(6 32 32)"/>
+  <!-- Foreground darker teal square -->
+  <rect x="8" y="8" width="48" height="48" rx="4" fill="#0d9488" transform="rotate(-3 32 32)"/>
+  <!-- Speech bubble icon -->
+  <path d="M20 22 C20 20 22 18 24 18 L40 18 C42 18 44 20 44 22 L44 34 C44 36 42 38 40 38 L28 38 L22 44 L22 38 L24 38 C22 38 20 36 20 34 Z" fill="white" opacity="0.95"/>
+  <!-- Heart in speech bubble -->
+  <path d="M32 28 C30 26 27 26 27 29 C27 32 32 35 32 35 C32 35 37 32 37 29 C37 26 34 26 32 28" fill="#14B8A6"/>
 </svg>

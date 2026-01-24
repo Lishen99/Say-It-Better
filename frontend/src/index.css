@@ -2,38 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+
 * {
   box-sizing: border-box;
 }
 
 body {
-  @apply bg-gradient-to-br from-soft-50 to-calm-50 min-h-screen;
+  background-color: #f9f5f0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
 }
 
-/* Custom scrollbar for a calmer feel */
+/* Serif font for content */
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Custom scrollbar - calm theme */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-soft-100 rounded-full;
+  background: #f9f5f0;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-calm-300 rounded-full;
+  background: #14B8A6;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-calm-400;
+  background: #0d9488;
 }
 
-/* Smooth focus transitions */
+/* Focus states for brutalist theme */
 *:focus {
-  @apply outline-none ring-2 ring-calm-400 ring-offset-2;
+  outline: none;
+  box-shadow: 0 0 0 3px #14B8A6;
 }
 
 /* Textarea placeholder styling */
 textarea::placeholder {
-  @apply text-soft-400;
+  color: #b2bec3;
+}
+
+/* Card style utility - calm version */
+.calm-card {
+  @apply bg-white border border-[#e0e0e0] rounded-xl shadow-sm;
+}
+
+.calm-card-elevated {
+  @apply bg-white border border-[#d0d5dd] rounded-xl shadow-md;
+}
+
+/* Button styles - calm version */
+.calm-btn {
+  @apply font-semibold text-sm rounded-lg transition-all duration-200;
+}
+
+/* Teal accent button */
+.calm-btn-primary {
+  @apply calm-btn bg-[#14B8A6] hover:bg-[#0d9488] text-white px-5 py-2.5 shadow-sm hover:shadow-md;
+}
+
+/* Outline button */
+.calm-btn-outline {
+  @apply calm-btn bg-white border border-[#14B8A6] text-[#14B8A6] hover:bg-[#14B8A6]/5 px-5 py-2.5;
 }

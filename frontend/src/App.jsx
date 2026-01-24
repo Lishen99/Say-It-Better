@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Heart, Send, Copy, Download, RefreshCw, CheckCircle, AlertCircle, Sparkles, Shield, ChevronDown, ChevronUp, FileText, Trash2, Calendar, TrendingUp } from 'lucide-react'
+import { Heart, Send, Copy, Download, RefreshCw, CheckCircle, AlertCircle, Sparkles, Shield, ChevronDown, ChevronUp, FileText, Trash2, Calendar, TrendingUp, Lock, BookOpen } from 'lucide-react'
 import DisclaimerModal from './components/DisclaimerModal'
 import InputSection from './components/InputSection'
 import OutputSection from './components/OutputSection'
@@ -7,7 +7,10 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import SessionSummary from './components/SessionSummary'
 import ThemeTrendsChart from './components/ThemeTrendsChart'
+import GuideModal from './components/GuideModal'
+import CloudSyncModal from './components/CloudSyncModal'
 import storage from './services/storage'
+import { cloudStorage } from './services/cloudStorage'
 
 // In development, uses localhost:8000. In production (Vercel), API is at /api
 const API_BASE = import.meta.env.VITE_API_BASE || '/api'
@@ -27,6 +30,9 @@ function App() {
   const [history, setHistory] = useState([])
   const [recurringThemes, setRecurringThemes] = useState([])
   const [showSessionSummary, setShowSessionSummary] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+  const [showCloudSync, setShowCloudSync] = useState(false)
+  const [isCloudConnected, setIsCloudConnected] = useState(false)
   const [storageReady, setStorageReady] = useState(false)
 
   // Initialize storage and load history
@@ -42,6 +48,10 @@ function App() {
       const entries = await storage.getAllEntries()
       setHistory(entries)
       setStorageReady(true)
+      
+      // Check cloud storage status
+      const cloudStatus = cloudStorage.getStatus()
+      setIsCloudConnected(cloudStatus.isEnabled)
     }
     
     initStorage()
@@ -200,7 +210,7 @@ therapy, diagnosis, or medical advice.
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#f9f5f0]">
       {/* Session Summary Modal */}
       {showSessionSummary && (
         <SessionSummary 
@@ -213,23 +223,47 @@ therapy, diagnosis, or medical advice.
       {showDisclaimer && (
         <DisclaimerModal onAccept={handleAcceptDisclaimer} />
       )}
+      {showGuide && (
+        <GuideModal onClose={() => setShowGuide(false)} />
+      )}
+      {showCloudSync && (
+        <CloudSyncModal 
+          isOpen={showCloudSync}
+          onClose={() => setShowCloudSync(false)}
+          entries={history}
+          onSync={async (syncedEntries) => {
+            // Update local storage with synced entries
+            for (const entry of syncedEntries) {
+              await storage.saveEntry(entry)
+            }
+            const updatedHistory = await storage.getAllEntries()
+            setHistory(updatedHistory)
+            setIsCloudConnected(true)
+          }}
+        />
+      )}
       
-      <Header />
+      <Header 
+        onGuideClick={() => setShowGuide(true)} 
+        onCloudClick={() => setShowCloudSync(true)}
+        isCloudConnected={isCloudConnected}
+      />
       
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-        {/* Introduction */}
-        <div className="text-center mb-8 animate-fade-in">
-          <h2 className="text-2xl md:text-3xl font-semibold text-soft-800 mb-3">
-            Express yourself clearly
-          </h2>
-          <p className="text-soft-600 max-w-2xl mx-auto">
-            Write your thoughts freely. We'll help you translate them into clear, 
-            calm language that's easier to share with others.
+      <main className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
+        {/* Hero Section */}
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#2d3436] mb-4 tracking-tight leading-tight">
+            Say what you
+            <span className="text-[#14B8A6]"> really mean</span>
+          </h1>
+          <p className="text-lg text-[#636e72] max-w-xl mx-auto leading-relaxed">
+            Transform scattered thoughts into clear, shareable summaries. 
+            A gentle tool to help you express yourself.
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <InputSection 
             rawText={rawText}
             setRawText={setRawText}
@@ -241,7 +275,7 @@ therapy, diagnosis, or medical advice.
           />
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-slide-up">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <p className="text-red-700">{error}</p>
             </div>
@@ -274,16 +308,20 @@ therapy, diagnosis, or medical advice.
           )}
         </div>
 
-        {/* Data Storage Notice */}
-        <div className="mt-12 bg-calm-50 border border-calm-200 rounded-xl p-6">
-          <div className="flex items-start gap-3">
-            <Shield className="w-5 h-5 text-calm-600 flex-shrink-0 mt-0.5" />
+        {/* Privacy Info Box */}
+        <div className="mt-12 bg-[#14B8A6]/5 border border-[#14B8A6]/30 rounded-2xl p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-[#14B8A6] rounded-xl flex items-center justify-center flex-shrink-0">
+              <Lock className="w-5 h-5 text-white" />
+            </div>
             <div>
-              <h3 className="font-medium text-calm-800 mb-1">Your data stays with you</h3>
-              <p className="text-sm text-calm-700">
-                Your translations are saved <strong>only in your browser's local storage</strong>. 
-                We don't store your data on any server. You can generate a summary of your entries 
-                to share with a therapist, and delete everything at any time.
+              <h3 className="font-semibold text-[#2d3436] mb-1">
+                Your Data Stays Private
+              </h3>
+              <p className="text-[#636e72] text-sm leading-relaxed">
+                By default, translations are saved <strong className="text-[#2d3436]">locally in your browser</strong>. 
+                Enable <strong className="text-[#2d3436]">cloud sync</strong> to access across devices with 
+                <strong className="text-[#14B8A6]"> end-to-end encryption</strong> — only you can decrypt your data.
               </p>
             </div>
           </div>
@@ -307,35 +345,35 @@ function HistorySection({ history, onOpenSummary, onClearHistory, onDeleteEntry 
   }, {})
 
   return (
-    <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-soft-200 overflow-hidden">
-      <div className="p-4 flex items-center justify-between border-b border-soft-200 bg-soft-50">
+    <div className="bg-white border border-[#e0e0e0] rounded-2xl shadow-sm overflow-hidden">
+      <div className="p-4 flex items-center justify-between border-b border-[#e0e0e0] bg-[#fafafa]">
         <button 
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 text-left hover:text-calm-600 transition-colors"
+          className="flex items-center gap-3 text-left hover:text-[#14B8A6] transition-colors"
         >
-          <Calendar className="w-4 h-4 text-soft-500" />
-          <span className="font-medium text-soft-700">Saved Entries</span>
-          <span className="text-xs bg-soft-200 text-soft-600 px-2 py-0.5 rounded-full">
+          <Calendar className="w-5 h-5 text-[#636e72]" />
+          <span className="font-semibold text-[#2d3436]">Saved Entries</span>
+          <span className="text-xs bg-[#14B8A6] text-white px-2 py-0.5 rounded-full font-medium">
             {history.length}
           </span>
           {expanded ? (
-            <ChevronUp className="w-4 h-4 text-soft-400" />
+            <ChevronUp className="w-4 h-4 text-[#636e72]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-soft-400" />
+            <ChevronDown className="w-4 h-4 text-[#636e72]" />
           )}
         </button>
         
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenSummary}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-calm-500 text-white text-sm rounded-lg hover:bg-calm-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#14B8A6] text-white text-sm font-medium rounded-lg hover:bg-[#0d9488] transition-all shadow-sm"
           >
             <FileText className="w-4 h-4" />
-            <span>Generate Summary for Therapist</span>
+            <span className="hidden sm:inline">Generate Summary</span>
           </button>
           <button
             onClick={onClearHistory}
-            className="p-1.5 text-soft-400 hover:text-red-500 transition-colors"
+            className="p-2 text-[#636e72] hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
             title="Delete all entries"
           >
             <Trash2 className="w-4 h-4" />
@@ -344,33 +382,33 @@ function HistorySection({ history, onOpenSummary, onClearHistory, onDeleteEntry 
       </div>
       
       {expanded && (
-        <div className="divide-y divide-soft-100 max-h-96 overflow-y-auto">
+        <div className="divide-y divide-[#e8e8e8] max-h-80 overflow-y-auto">
           {Object.entries(groupedByDate).map(([date, entries]) => (
             <div key={date}>
-              <div className="px-4 py-2 bg-soft-100 text-xs font-medium text-soft-600 sticky top-0">
+              <div className="px-4 py-2 bg-[#f5f5f5] text-xs font-medium text-[#636e72] sticky top-0 border-b border-[#e0e0e0]">
                 {date} — {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
               </div>
               {entries.map((entry) => (
-                <div key={entry.id} className="p-4 hover:bg-soft-50 transition-colors group">
+                <div key={entry.id} className="p-4 hover:bg-[#fafafa] transition-colors group">
                   <div className="flex justify-between items-start gap-2">
-                    <p className="text-sm text-soft-700 mb-2 flex-1">
+                    <p className="text-sm text-[#636e72] mb-2 flex-1">
                       {entry.summary || entry.rawInput?.substring(0, 150) + '...'}
                     </p>
                     <button
                       onClick={() => onDeleteEntry(entry.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-soft-400 hover:text-red-500 transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1 text-[#636e72] hover:text-red-500 transition-all rounded"
                       title="Delete this entry"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     {entry.themes?.map((theme, i) => (
-                      <span key={i} className="text-xs bg-calm-100 text-calm-700 px-2 py-1 rounded-full">
+                      <span key={i} className="text-xs bg-[#14B8A6]/10 text-[#0d9488] px-2 py-0.5 rounded-full font-medium">
                         {typeof theme === 'string' ? theme : theme.theme}
                       </span>
                     ))}
-                    <span className="text-xs text-soft-400 ml-auto">
+                    <span className="text-xs text-[#b2bec3] ml-auto">
                       {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>

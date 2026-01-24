@@ -392,51 +392,53 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-soft-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#2d3436]/90">
+      <div className="bg-[#f9f5f0] border-4 border-[#2d3436] shadow-[12px_12px_0px_0px_rgba(45,52,54,1)] max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-calm-500 to-calm-600 p-6 text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6" />
+        <div className="bg-[#2d3436] p-6 text-white flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#14B8A6] flex items-center justify-center">
+              <FileText className="w-6 h-6" />
+            </div>
             <div>
-              <h2 className="text-xl font-semibold">Therapist Summary</h2>
-              <p className="text-calm-100 text-sm">Generate a comprehensive summary to share with your healthcare provider</p>
+              <h2 className="text-xl font-bold uppercase tracking-wide">Therapist Summary</h2>
+              <p className="text-gray-300 text-sm">Generate a summary to share with your healthcare provider</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 transition-colors border-2 border-white/30"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-soft-200">
+        <div className="flex border-b-4 border-[#2d3436]">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                 activeTab === tab.id 
-                  ? 'text-calm-600 border-b-2 border-calm-500 bg-calm-50' 
-                  : 'text-soft-500 hover:text-soft-700 hover:bg-soft-50'
+                  ? 'text-white bg-[#14B8A6] border-r-2 border-[#2d3436] last:border-r-0' 
+                  : 'text-[#636e72] bg-[#f9f5f0] hover:bg-[#e8e3dd] border-r-2 border-[#2d3436] last:border-r-0'
               }`}
             >
               <tab.icon className="w-4 h-4" />
-              <span>{tab.label}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Options Bar */}
-        <div className="p-4 bg-soft-50 border-b border-soft-200 flex flex-wrap items-center gap-4">
+        <div className="p-4 bg-white border-b-4 border-[#2d3436] flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-soft-600">Time period:</label>
+            <label className="text-sm font-bold uppercase tracking-wide text-[#2d3436]">Period:</label>
             <select 
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-1.5 bg-white border border-soft-200 rounded-lg text-sm"
+              className="px-3 py-2 bg-white border-2 border-[#2d3436] text-sm font-medium"
             >
               <option value="all">All Time ({history.length} entries)</option>
               <option value="week">Past 7 Days</option>
@@ -444,17 +446,17 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
             </select>
           </div>
           
-          <label className="flex items-center gap-2 text-sm text-soft-600">
+          <label className="flex items-center gap-2 text-sm text-[#636e72]">
             <input 
               type="checkbox"
               checked={includeRawInput}
               onChange={(e) => setIncludeRawInput(e.target.checked)}
-              className="rounded border-soft-300"
+              className="w-4 h-4 border-2 border-[#2d3436] accent-[#14B8A6]"
             />
-            Include original text
+            <span className="font-medium">Include original text</span>
           </label>
 
-          <div className="ml-auto text-sm text-soft-500">
+          <div className="ml-auto text-sm text-[#636e72] font-medium">
             {selectedEntries.size} of {entriesForSelection.length} entries selected
           </div>
         </div>
@@ -465,10 +467,10 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
           {activeTab === 'select' && (
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium text-soft-800">Choose entries to include</h3>
+                <h3 className="font-bold text-[#2d3436] uppercase tracking-wide text-sm">Choose entries to include</h3>
                 <button
                   onClick={toggleAll}
-                  className="text-sm text-calm-600 hover:text-calm-700"
+                  className="text-sm text-[#14B8A6] hover:text-[#0d9488] font-bold"
                 >
                   {selectedEntries.size === entriesForSelection.length ? 'Deselect All' : 'Select All'}
                 </button>
@@ -478,28 +480,28 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                 {entriesForSelection.map((entry) => (
                   <label
                     key={entry.id}
-                    className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-3 border-2 cursor-pointer transition-colors ${
                       selectedEntries.has(entry.id) 
-                        ? 'bg-calm-50 border-calm-200' 
-                        : 'bg-white border-soft-200 hover:bg-soft-50'
+                        ? 'bg-[#14B8A6]/10 border-[#14B8A6]' 
+                        : 'bg-white border-[#2d3436] hover:bg-[#f8f9fa]'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedEntries.has(entry.id)}
                       onChange={() => toggleEntry(entry.id)}
-                      className="mt-1 rounded border-soft-300 text-calm-500"
+                      className="mt-1 border-2 border-[#2d3436] accent-[#14B8A6]"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-soft-500">
+                        <span className="text-xs text-[#636e72] font-medium">
                           {new Date(entry.timestamp).toLocaleDateString()} at {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-sm text-soft-700 line-clamp-2">{entry.summary}</p>
+                      <p className="text-sm text-[#2d3436] line-clamp-2">{entry.summary}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {entry.themes?.slice(0, 3).map((theme, i) => (
-                          <span key={i} className="text-xs bg-soft-100 text-soft-600 px-2 py-0.5 rounded-full">
+                          <span key={i} className="text-xs bg-[#14B8A6]/10 text-[#0d9488] px-2 py-0.5 border border-[#14B8A6] font-medium">
                             {typeof theme === 'string' ? theme : theme.theme}
                           </span>
                         ))}
@@ -516,19 +518,19 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
             <div className="p-4">
               {/* Theme Overview */}
               {themeAnalysis.length > 0 && (
-                <div className="mb-4 p-4 bg-calm-50 rounded-xl border border-calm-200">
+                <div className="mb-4 p-4 bg-[#14B8A6]/10 border-2 border-[#14B8A6]">
                   <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className="w-4 h-4 text-calm-600" />
-                    <h3 className="font-medium text-calm-800">Recurring Themes in Selection</h3>
+                    <TrendingUp className="w-4 h-4 text-[#14B8A6]" />
+                    <h3 className="font-bold text-[#2d3436] uppercase tracking-wide text-sm">Recurring Themes in Selection</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {themeAnalysis.slice(0, 8).map(({ theme, count }) => (
                       <span 
                         key={theme}
-                        className="px-3 py-1.5 bg-white text-calm-800 rounded-full text-sm flex items-center gap-1.5 border border-calm-200"
+                        className="px-3 py-1.5 bg-white text-[#2d3436] text-sm flex items-center gap-1.5 border-2 border-[#2d3436] font-medium"
                       >
                         {theme}
-                        <span className="bg-calm-100 text-calm-700 px-1.5 py-0.5 rounded-full text-xs">
+                        <span className="bg-[#14B8A6] text-white px-1.5 py-0.5 text-xs font-bold">
                           {count}
                         </span>
                       </span>
@@ -538,18 +540,18 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
               )}
 
               {filteredHistory.length === 0 ? (
-                <div className="text-center py-12 text-soft-500">
+                <div className="text-center py-12 text-[#636e72]">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No entries selected</p>
                   <button 
                     onClick={() => setActiveTab('select')}
-                    className="mt-2 text-calm-600 hover:text-calm-700"
+                    className="mt-2 text-[#14B8A6] hover:text-[#0d9488] font-bold"
                   >
                     Select entries to include
                   </button>
                 </div>
               ) : (
-                <pre className="text-xs text-soft-700 font-mono whitespace-pre-wrap bg-soft-50 p-4 rounded-xl border border-soft-200 max-h-80 overflow-y-auto">
+                <pre className="text-xs text-[#2d3436] font-mono whitespace-pre-wrap bg-[#f8f9fa] p-4 border-2 border-[#2d3436] max-h-80 overflow-y-auto">
                   {summaryText}
                 </pre>
               )}
@@ -560,7 +562,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
           {activeTab === 'share' && (
             <div className="p-6 space-y-4">
               {filteredHistory.length === 0 ? (
-                <div className="text-center py-8 text-soft-500">
+                <div className="text-center py-8 text-[#636e72] font-medium">
                   <p>Please select at least one entry to share</p>
                 </div>
               ) : (
@@ -568,54 +570,54 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   {/* PDF Download */}
                   <button
                     onClick={handleDownloadPDF}
-                    className="w-full flex items-center gap-4 p-4 bg-calm-50 hover:bg-calm-100 border border-calm-200 rounded-xl transition-colors"
+                    className="w-full flex items-center gap-4 p-4 bg-[#14B8A6]/10 hover:bg-[#14B8A6]/20 border-2 border-[#14B8A6] transition-colors"
                   >
-                    <div className="w-12 h-12 bg-calm-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-[#14B8A6] border-2 border-[#2d3436] flex items-center justify-center">
                       <Download className="w-6 h-6 text-white" />
                     </div>
                     <div className="text-left">
-                      <h4 className="font-medium text-calm-800">Download PDF</h4>
-                      <p className="text-sm text-calm-600">Professional document for your healthcare provider</p>
+                      <h4 className="font-bold text-[#2d3436]">Download PDF</h4>
+                      <p className="text-sm text-[#636e72]">Professional document for your healthcare provider</p>
                     </div>
                   </button>
 
                   {/* Email */}
                   <button
                     onClick={openEmailDraft}
-                    className="w-full flex items-center gap-4 p-4 bg-soft-50 hover:bg-soft-100 border border-soft-200 rounded-xl transition-colors"
+                    className="w-full flex items-center gap-4 p-4 bg-[#f8f9fa] hover:bg-[#e9ecef] border-2 border-[#2d3436] transition-colors"
                   >
-                    <div className="w-12 h-12 bg-soft-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-[#636e72] border-2 border-[#2d3436] flex items-center justify-center">
                       <Mail className="w-6 h-6 text-white" />
                     </div>
                     <div className="text-left">
-                      <h4 className="font-medium text-soft-800">Open Email Draft</h4>
-                      <p className="text-sm text-soft-600">Pre-filled email in your default mail client</p>
+                      <h4 className="font-bold text-[#2d3436]">Open Email Draft</h4>
+                      <p className="text-sm text-[#636e72]">Pre-filled email in your default mail client</p>
                     </div>
                   </button>
 
                   {/* Secure Link */}
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="p-4 bg-[#f39c12]/10 border-2 border-[#f39c12]">
                     <div className="flex items-start gap-3 mb-4">
-                      <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <Clock className="w-5 h-5 text-[#f39c12] flex-shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="font-medium text-amber-800">Secure Temporary Link</h4>
-                        <p className="text-sm text-amber-700">Generate a link that expires in 24 hours</p>
+                        <h4 className="font-bold text-[#2d3436]">Secure Temporary Link</h4>
+                        <p className="text-sm text-[#636e72]">Generate a link that expires in 24 hours</p>
                       </div>
                     </div>
 
                     {!linkGenerated ? (
                       <button
                         onClick={generateSecureLink}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#f39c12] text-white font-bold uppercase tracking-wide border-2 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                       >
                         <Link2 className="w-5 h-5" />
                         <span>Generate Secure Link</span>
                       </button>
                     ) : (
                       <div className="space-y-3">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <p className="text-xs text-green-700 font-mono break-all">{generatedLink}</p>
-                          <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                        <div className="bg-[#14B8A6]/10 border-2 border-[#14B8A6] p-3">
+                          <p className="text-xs text-[#2d3436] font-mono break-all">{generatedLink}</p>
+                          <p className="text-xs text-[#636e72] mt-2 flex items-center gap-1 font-medium">
                             <Clock className="w-3 h-3" />
                             Expires in 24 hours
                           </p>
@@ -624,14 +626,14 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                         <div className="flex gap-2">
                           <button
                             onClick={() => onCopy(generatedLink)}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-soft-100 text-soft-700 rounded-lg hover:bg-soft-200 transition-colors text-sm"
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#f8f9fa] text-[#2d3436] border-2 border-[#2d3436] font-bold hover:bg-[#e9ecef] transition-colors text-sm"
                           >
                             {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                             <span>{copied ? 'Copied!' : 'Copy Link'}</span>
                           </button>
                           <button
                             onClick={() => setShowQR(!showQR)}
-                            className="flex items-center justify-center gap-2 px-3 py-2 bg-soft-100 text-soft-700 rounded-lg hover:bg-soft-200 transition-colors text-sm"
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-[#f8f9fa] text-[#2d3436] border-2 border-[#2d3436] font-bold hover:bg-[#e9ecef] transition-colors text-sm"
                           >
                             <QrCode className="w-4 h-4" />
                             <span>QR</span>
@@ -639,7 +641,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                         </div>
 
                         {showQR && (
-                          <div className="flex justify-center p-4 bg-white border border-soft-200 rounded-lg">
+                          <div className="flex justify-center p-4 bg-white border-2 border-[#2d3436]">
                             <QRCodeSVG value={generatedLink} size={150} level="M" includeMargin />
                           </div>
                         )}
@@ -648,9 +650,9 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   </div>
 
                   {/* Privacy Notice */}
-                  <div className="flex items-start gap-2 p-3 bg-soft-50 rounded-lg">
-                    <Shield className="w-4 h-4 text-soft-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-soft-600">
+                  <div className="flex items-start gap-2 p-3 bg-[#f8f9fa] border-2 border-[#2d3436]">
+                    <Shield className="w-4 h-4 text-[#14B8A6] flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-[#636e72] font-medium">
                       You're in control. All sharing is manual — we never send your data anywhere automatically.
                     </p>
                   </div>
@@ -661,10 +663,10 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
         </div>
 
         {/* Actions Footer */}
-        <div className="p-4 bg-soft-50 border-t border-soft-200 flex justify-between items-center">
+        <div className="p-4 bg-[#f8f9fa] border-t-4 border-[#2d3436] flex justify-between items-center">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-soft-600 hover:text-soft-800 transition-colors"
+            className="px-4 py-2 text-[#636e72] hover:text-[#2d3436] font-bold transition-colors"
           >
             Cancel
           </button>
@@ -673,7 +675,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
             <button
               onClick={() => onCopy(summaryText)}
               disabled={filteredHistory.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-soft-200 text-soft-700 rounded-lg hover:bg-soft-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-white text-[#2d3436] border-2 border-[#2d3436] font-bold hover:bg-[#e9ecef] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'Copied!' : 'Copy Text'}</span>
@@ -681,7 +683,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
             <button
               onClick={handleDownloadPDF}
               disabled={filteredHistory.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-calm-500 text-white rounded-lg hover:bg-calm-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-[#14B8A6] text-white border-2 border-[#2d3436] font-bold hover:bg-[#0d9488] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               <Download className="w-4 h-4" />
               <span>Download PDF</span>

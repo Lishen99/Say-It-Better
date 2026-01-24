@@ -18,8 +18,15 @@ function InputSection({ rawText, setRawText, tone, setTone, onTranslate, onClear
     setShowPrompts(false)
   }
 
+  const characterCountColor = () => {
+    const percentage = (charCount / maxChars) * 100
+    if (percentage >= 90) return 'text-red-500'
+    if (percentage >= 75) return 'text-orange-500'
+    return 'text-[#636e72]'
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 relative mb-10">
       {/* Guided Prompts */}
       {showPrompts && (
         <GuidedPrompts 
@@ -28,110 +35,111 @@ function InputSection({ rawText, setRawText, tone, setTone, onTranslate, onClear
         />
       )}
 
-      <div className="bg-white rounded-2xl shadow-lg shadow-soft-200/50 border border-soft-200 overflow-hidden animate-fade-in">
-      {/* Input Header */}
-      <div className="bg-gradient-to-r from-soft-50 to-calm-50 px-6 py-4 border-b border-soft-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium text-soft-800">Write your thoughts</h3>
-            <p className="text-sm text-soft-500">Express yourself freely — no formatting needed</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-xs ${charCount < minChars ? 'text-red-500' : charCount > maxChars ? 'text-red-500' : 'text-soft-400'}`}>
-              {charCount} / {maxChars}
+      <div className="bg-white border border-[#e0e0e0] rounded-2xl shadow-sm p-6 md:p-8">
+        {/* Input Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-semibold text-[#2d3436] flex items-center gap-2">
+              <span className="w-1 h-4 bg-[#14B8A6] rounded-full"></span>
+              Your Thoughts
+            </label>
+            <span className={`text-xs ${characterCountColor()} transition-colors font-mono`}>
+              {charCount}/{maxChars}
             </span>
           </div>
+          <p className="text-sm text-[#636e72] mb-3">
+            Share what's on your mind — raw, unfiltered, however it comes out.
+          </p>
+          
+          <textarea
+            value={rawText}
+            onChange={(e) => setRawText(e.target.value)}
+            placeholder="I don't even know what's wrong. I feel tired all the time, I can't focus, and everything just feels heavy and overwhelming. It's like I'm carrying something I can't see but it weighs me down every day..."
+            className="w-full h-44 px-4 py-3 border border-[#d0d5dd] rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] text-base text-[#2d3436] placeholder:text-[#b2bec3] bg-[#fafafa] leading-relaxed transition-all"
+            maxLength={maxChars}
+          />
         </div>
-      </div>
 
-      {/* Text Area */}
-      <div className="p-6">
-        <textarea
-          value={rawText}
-          onChange={(e) => setRawText(e.target.value)}
-          placeholder="I don't even know what's wrong. I feel tired all the time, I can't focus, and everything just feels heavy and overwhelming. It's like I'm carrying something I can't see but it weighs me down every day..."
-          className="w-full h-48 p-4 bg-soft-50 rounded-xl border border-soft-200 resize-none text-soft-800 placeholder-soft-400 focus:border-calm-400 focus:bg-white transition-all text-base leading-relaxed"
-          maxLength={maxChars}
-        />
-      </div>
-
-      {/* Tone Selector */}
-      <div className="px-6 pb-4">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-soft-600">Output tone:</span>
-          <div className="flex gap-2">
+        {/* Output Tone Selector */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-1 h-4 bg-[#14B8A6] rounded-full"></span>
+            <label className="text-sm font-semibold text-[#2d3436]">
+              Output Tone
+            </label>
+          </div>
+          <div className="flex gap-2 flex-wrap">
             {[
-              { value: 'neutral', label: 'Neutral', desc: 'Balanced and clear' },
-              { value: 'personal', label: 'Personal', desc: 'Warmer, first-person' },
-              { value: 'clinical', label: 'Clinical', desc: 'Medical-appropriate' }
+              { value: 'neutral', label: 'Neutral' },
+              { value: 'personal', label: 'Personal' },
+              { value: 'clinical', label: 'Clinical' }
             ].map((option) => (
               <button
                 key={option.value}
+                type="button"
                 onClick={() => setTone(option.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                   tone === option.value
-                    ? 'bg-calm-500 text-white shadow-md'
-                    : 'bg-soft-100 text-soft-600 hover:bg-soft-200'
+                    ? 'bg-[#14B8A6] text-white shadow-sm'
+                    : 'bg-[#f5f5f5] text-[#636e72] hover:bg-[#e8e8e8]'
                 }`}
-                title={option.desc}
               >
                 {option.label}
               </button>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="px-6 pb-6 flex items-center gap-3">
-        <button
-          onClick={onTranslate}
-          disabled={loading || charCount < minChars}
-          className="flex-1 bg-gradient-to-r from-calm-500 to-calm-600 text-white py-3.5 px-6 rounded-xl font-medium hover:from-calm-600 hover:to-calm-700 transition-all shadow-lg shadow-calm-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Translating...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5" />
-              <span>Translate My Thoughts</span>
-            </>
-          )}
-        </button>
-        
-        {/* Voice Input */}
-        <VoiceInput 
-          onTranscript={handleVoiceTranscript}
-          disabled={loading}
-        />
-        
-        {/* Guided Prompts Toggle */}
-        <button
-          onClick={() => setShowPrompts(!showPrompts)}
-          disabled={loading}
-          className={`p-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-            showPrompts 
-              ? 'bg-amber-500 text-white' 
-              : 'bg-soft-100 text-soft-600 hover:bg-soft-200'
-          }`}
-          title="Get writing prompts"
-        >
-          <Lightbulb className="w-5 h-5" />
-        </button>
-        
-        <button
-          onClick={onClear}
-          disabled={loading || !rawText}
-          className="p-3.5 rounded-xl bg-soft-100 text-soft-600 hover:bg-soft-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Clear all"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={onTranslate}
+            disabled={loading || charCount < minChars}
+            className="flex-1 min-w-[180px] flex items-center justify-center gap-2 bg-[#14B8A6] hover:bg-[#0d9488] text-white px-5 py-3 transition-all font-semibold text-sm rounded-xl shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Translating...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                <span>Translate My Thoughts</span>
+              </>
+            )}
+          </button>
+          
+          {/* Voice Input */}
+          <VoiceInput 
+            onTranscript={handleVoiceTranscript}
+            disabled={loading}
+          />
+          
+          {/* Guided Prompts Toggle */}
+          <button
+            onClick={() => setShowPrompts(!showPrompts)}
+            disabled={loading}
+            className={`p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+              showPrompts 
+                ? 'bg-[#f39c12] text-white shadow-sm' 
+                : 'bg-[#f5f5f5] text-[#636e72] hover:bg-[#e8e8e8]'
+            }`}
+            title="Get writing prompts"
+          >
+            <Lightbulb className="w-5 h-5" />
+          </button>
+          
+          <button
+            onClick={onClear}
+            disabled={loading || !rawText}
+            className="p-3 rounded-xl bg-[#f5f5f5] text-[#636e72] hover:bg-[#e8e8e8] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Clear all"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
       </div>
-    </div>
     </div>
   )
 }

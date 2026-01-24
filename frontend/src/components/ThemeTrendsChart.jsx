@@ -51,38 +51,38 @@ function ThemeTrendsChart({ history }) {
 
   if (themeData.length === 0) {
     return (
-      <div className="bg-soft-50 rounded-xl p-6 text-center text-soft-500">
-        <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p>Complete more translations to see theme trends</p>
+      <div className="bg-white border-2 border-gray-200 shadow-lg rounded-xl p-6 text-center">
+        <TrendingUp className="w-8 h-8 mx-auto mb-2 text-[#636e72] opacity-50" />
+        <p className="text-[#636e72] font-medium">Complete more translations to see theme trends</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg shadow-soft-200/50 border border-soft-200 overflow-hidden">
+    <div className="bg-white border-2 border-gray-200 shadow-lg rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-4">
+      <div className="bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] px-6 py-4 rounded-t-xl">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white">
+          <div className="flex items-center gap-3 text-white">
             <TrendingUp className="w-5 h-5" />
-            <h3 className="font-medium">Theme Trends</h3>
+            <h3 className="font-semibold text-sm">Theme Trends</h3>
           </div>
           <div className="flex gap-1">
             <button
               onClick={() => setChartType('bar')}
-              className={`p-2 rounded-lg transition-colors ${chartType === 'bar' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'}`}
+              className={`p-2 rounded-lg transition-colors ${chartType === 'bar' ? 'bg-[#14B8A6] text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
             >
               <TrendingUp className="w-4 h-4" />
             </button>
             <button
               onClick={() => setChartType('pie')}
-              className={`p-2 rounded-lg transition-colors ${chartType === 'pie' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'}`}
+              className={`p-2 rounded-lg transition-colors ${chartType === 'pie' ? 'bg-[#14B8A6] text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
             >
               <PieChartIcon className="w-4 h-4" />
             </button>
           </div>
         </div>
-        <p className="text-teal-100 text-sm mt-1">
+        <p className="text-gray-400 text-sm mt-1">
           Patterns in your {history.length} translation{history.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -153,10 +153,10 @@ function ThemeTrendsChart({ history }) {
           {themeData.slice(0, 5).map((item, index) => (
             <div key={item.name} className="flex items-center gap-1.5">
               <div 
-                className="w-3 h-3 rounded-full" 
+                className="w-3 h-3 rounded-sm" 
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
-              <span className="text-xs text-soft-600">{item.name}</span>
+              <span className="text-xs text-[#636e72] font-medium">{item.name}</span>
             </div>
           ))}
         </div>
@@ -165,14 +165,14 @@ function ThemeTrendsChart({ history }) {
       {/* Insight */}
       {themeData.length > 0 && (
         <div className="px-6 pb-6">
-          <div className="bg-teal-50 border border-teal-200 rounded-xl p-4">
-            <p className="text-sm text-teal-800">
+          <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+            <p className="text-sm text-[#2d3436]">
               <strong>Most frequent:</strong> "{themeData[0].name}" appears in {themeData[0].percentage}% of your translations.
               {themeData.length > 1 && (
                 <> This is followed by "{themeData[1].name}" at {themeData[1].percentage}%.</>
               )}
             </p>
-            <p className="text-xs text-teal-600 mt-2">
+            <p className="text-xs text-[#636e72] mt-2 italic">
               This is pattern observation only — not a diagnosis. Consider discussing recurring themes with someone you trust.
             </p>
           </div>

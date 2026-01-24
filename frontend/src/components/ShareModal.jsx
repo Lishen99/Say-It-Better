@@ -157,21 +157,23 @@ This is not therapy, diagnosis, or medical advice.`
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-soft-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2d3436]/80 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white border-4 border-[#2d3436] shadow-[8px_8px_0px_0px_#2d3436] max-w-lg w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-calm-500 to-calm-600 p-6 text-white">
+        <div className="bg-[#2d3436] p-6 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shield className="w-6 h-6" />
+              <div className="w-10 h-10 bg-[#14B8A6] border-2 border-white flex items-center justify-center">
+                <Shield className="w-5 h-5" />
+              </div>
               <div>
-                <h2 className="text-xl font-semibold">Share Your Summary</h2>
-                <p className="text-calm-100 text-sm">Choose how you want to share</p>
+                <h2 className="text-xl font-black uppercase tracking-wider">Share Your Summary</h2>
+                <p className="text-[#5eead4] text-sm font-medium">Choose how you want to share</p>
               </div>
             </div>
             <button 
               onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/20 border-2 border-white/30 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -179,15 +181,15 @@ This is not therapy, diagnosis, or medical advice.`
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-soft-200">
+        <div className="flex border-b-4 border-[#2d3436]">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                 activeTab === tab.id 
-                  ? 'text-calm-600 border-b-2 border-calm-500 bg-calm-50' 
-                  : 'text-soft-500 hover:text-soft-700 hover:bg-soft-50'
+                  ? 'text-white bg-[#14B8A6] border-b-4 border-[#0d9488]' 
+                  : 'text-[#2d3436] hover:bg-[#14B8A6]/10'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -200,17 +202,17 @@ This is not therapy, diagnosis, or medical advice.`
         <div className="p-6">
           {activeTab === 'copy' && (
             <div className="space-y-4">
-              <p className="text-soft-600 text-sm">
+              <p className="text-[#636e72] text-sm font-medium">
                 Copy your summary to paste anywhere — messages, notes, or documents.
               </p>
-              <div className="bg-soft-50 rounded-xl p-4 max-h-48 overflow-y-auto">
-                <pre className="text-xs text-soft-700 whitespace-pre-wrap font-mono">
+              <div className="bg-[#f8f9fa] border-2 border-[#2d3436] p-4 max-h-48 overflow-y-auto">
+                <pre className="text-xs text-[#2d3436] whitespace-pre-wrap font-mono">
                   {shareableText}
                 </pre>
               </div>
               <button
                 onClick={() => onCopy(shareableText)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-calm-500 text-white rounded-xl hover:bg-calm-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#14B8A6] text-white font-bold uppercase tracking-wide border-4 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                 <span>{copied ? 'Copied!' : 'Copy to Clipboard'}</span>
@@ -220,17 +222,17 @@ This is not therapy, diagnosis, or medical advice.`
 
           {activeTab === 'pdf' && (
             <div className="space-y-4">
-              <p className="text-soft-600 text-sm">
+              <p className="text-[#636e72] text-sm font-medium">
                 Generate a professionally formatted PDF to share with your therapist, doctor, or print for your records.
               </p>
-              <div className="bg-soft-50 rounded-xl p-6 text-center">
-                <FileText className="w-12 h-12 text-calm-500 mx-auto mb-3" />
-                <p className="text-soft-700 font-medium">Professional PDF Document</p>
-                <p className="text-soft-500 text-sm">Includes summary, themes, and share-ready version</p>
+              <div className="bg-[#f8f9fa] border-2 border-[#2d3436] p-6 text-center">
+                <FileText className="w-12 h-12 text-[#14B8A6] mx-auto mb-3" />
+                <p className="text-[#2d3436] font-bold">Professional PDF Document</p>
+                <p className="text-[#636e72] text-sm">Includes summary, themes, and share-ready version</p>
               </div>
               <button
                 onClick={generatePDF}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-calm-500 text-white rounded-xl hover:bg-calm-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#14B8A6] text-white font-bold uppercase tracking-wide border-4 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 <Download className="w-5 h-5" />
                 <span>Download PDF</span>
@@ -240,15 +242,15 @@ This is not therapy, diagnosis, or medical advice.`
 
           {activeTab === 'email' && (
             <div className="space-y-4">
-              <p className="text-soft-600 text-sm">
+              <p className="text-[#636e72] text-sm font-medium">
                 Open a pre-filled email draft in your default email app. You control who receives it.
               </p>
-              <div className="bg-soft-50 rounded-xl p-4">
+              <div className="bg-[#f8f9fa] border-2 border-[#2d3436] p-4">
                 <div className="flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-soft-400 flex-shrink-0 mt-0.5" />
+                  <Mail className="w-5 h-5 text-[#14B8A6] flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-soft-700 font-medium text-sm">Subject: My Say It Better Summary</p>
-                    <p className="text-soft-500 text-xs mt-1">
+                    <p className="text-[#2d3436] font-bold text-sm">Subject: My Say It Better Summary</p>
+                    <p className="text-[#636e72] text-xs mt-1">
                       Body will include your summary, themes, and share-ready version
                     </p>
                   </div>
@@ -256,12 +258,12 @@ This is not therapy, diagnosis, or medical advice.`
               </div>
               <button
                 onClick={openEmailDraft}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-calm-500 text-white rounded-xl hover:bg-calm-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#14B8A6] text-white font-bold uppercase tracking-wide border-4 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 <Mail className="w-5 h-5" />
                 <span>Open Email Draft</span>
               </button>
-              <p className="text-xs text-soft-400 text-center">
+              <p className="text-xs text-[#636e72] text-center font-medium">
                 Opens your default email app — nothing is sent automatically
               </p>
             </div>
@@ -269,24 +271,24 @@ This is not therapy, diagnosis, or medical advice.`
 
           {activeTab === 'link' && (
             <div className="space-y-4">
-              <p className="text-soft-600 text-sm">
+              <p className="text-[#636e72] text-sm font-medium">
                 Generate a secure, temporary link that expires in 24 hours. Perfect for sharing in person.
               </p>
               
               {!linkGenerated ? (
                 <>
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <div className="bg-[#f39c12]/10 border-2 border-[#f39c12] p-4 flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-[#f39c12] flex-shrink-0" />
                     <div>
-                      <p className="text-amber-800 font-medium text-sm">Temporary & Private</p>
-                      <p className="text-amber-700 text-xs mt-1">
+                      <p className="text-[#2d3436] font-bold text-sm">Temporary & Private</p>
+                      <p className="text-[#636e72] text-xs mt-1">
                         Link auto-expires after 24 hours. Data is encrypted client-side.
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={generateSecureLink}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-calm-500 text-white rounded-xl hover:bg-calm-600 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#14B8A6] text-white font-bold uppercase tracking-wide border-4 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   >
                     <Link2 className="w-5 h-5" />
                     <span>Generate Secure Link</span>
@@ -294,15 +296,15 @@ This is not therapy, diagnosis, or medical advice.`
                 </>
               ) : (
                 <>
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <p className="text-green-800 font-medium text-sm mb-2 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
+                  <div className="bg-[#14B8A6]/10 border-2 border-[#14B8A6] p-4">
+                    <p className="text-[#2d3436] font-bold text-sm mb-2 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-[#14B8A6]" />
                       Link Generated!
                     </p>
-                    <p className="text-xs text-green-700 font-mono bg-green-100 p-2 rounded break-all">
+                    <p className="text-xs text-[#2d3436] font-mono bg-white p-2 border border-[#2d3436] break-all">
                       {generatedLink}
                     </p>
-                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                    <p className="text-xs text-[#636e72] mt-2 flex items-center gap-1 font-medium">
                       <Clock className="w-3 h-3" />
                       Expires in 24 hours
                     </p>
@@ -310,14 +312,14 @@ This is not therapy, diagnosis, or medical advice.`
                   
                   <button
                     onClick={() => setShowQR(!showQR)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-soft-100 text-soft-700 rounded-xl hover:bg-soft-200 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#f8f9fa] text-[#2d3436] border-2 border-[#2d3436] font-bold hover:bg-[#e9ecef] transition-colors"
                   >
                     <QrCode className="w-4 h-4" />
                     <span>{showQR ? 'Hide' : 'Show'} QR Code</span>
                   </button>
                   
                   {showQR && (
-                    <div className="flex justify-center p-4 bg-white border border-soft-200 rounded-xl">
+                    <div className="flex justify-center p-4 bg-white border-2 border-[#2d3436]">
                       <QRCodeSVG 
                         value={generatedLink} 
                         size={180}
@@ -329,7 +331,7 @@ This is not therapy, diagnosis, or medical advice.`
                   
                   <button
                     onClick={() => onCopy(generatedLink)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-calm-500 text-white rounded-xl hover:bg-calm-600 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#14B8A6] text-white font-bold uppercase tracking-wide border-4 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                   >
                     {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                     <span>{copied ? 'Copied!' : 'Copy Link'}</span>
@@ -342,9 +344,9 @@ This is not therapy, diagnosis, or medical advice.`
 
         {/* Privacy Notice */}
         <div className="px-6 pb-6">
-          <div className="bg-soft-50 border border-soft-200 rounded-xl p-3 flex items-start gap-2">
-            <Shield className="w-4 h-4 text-soft-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-soft-600">
+          <div className="bg-[#f8f9fa] border-2 border-[#2d3436] p-3 flex items-start gap-2">
+            <Shield className="w-4 h-4 text-[#14B8A6] flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-[#636e72] font-medium">
               You're in control. All sharing is manual — we never send your data anywhere automatically.
             </p>
           </div>

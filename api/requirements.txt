@@ -1,1 +1,2 @@
-# No external dependencies needed - using stdlib urllib
+# Redis client for cloud storage
+redis>=5.0.0

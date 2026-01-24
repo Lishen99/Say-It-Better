@@ -37,6 +37,7 @@ Many people struggle to communicate their internal experiences clearly—especia
 | 📧 **Email Draft** | Open pre-filled email in your default mail client |
 | 🔗 **Secure Sharing** | Generate temporary links with QR codes (24h expiry) |
 | 💾 **Local History** | All data stored in IndexedDB on your device only |
+| ☁️ **E2E Cloud Sync** | Optional encrypted sync across devices with zero-knowledge architecture |
 
 ### Therapist Summary Generator
 | Feature | Description |
@@ -59,11 +60,20 @@ This tool is **intentionally designed with strong boundaries**:
 
 ### Privacy First
 - ✅ Text is processed only for the current request
-- ✅ No long-term storage on servers
 - ✅ No data used for training
-- ✅ All history stored locally in your browser (IndexedDB)
+- ✅ All history stored locally in your browser by default (IndexedDB)
+- ✅ **Optional cloud sync uses end-to-end encryption (AES-256-GCM)**
+- ✅ Zero-knowledge architecture — we cannot read your encrypted data
 - ✅ Users can delete all data at any time
 - ✅ Clear disclaimer shown on first visit
+
+### End-to-End Encryption (Cloud Sync)
+When you enable cloud sync:
+- Your data is encrypted **before** leaving your device
+- Encryption uses **AES-256-GCM** with PBKDF2 key derivation (100,000 iterations)
+- Your passphrase **never leaves your device** — only encrypted blobs are stored
+- Each user gets a unique storage key derived from their username + passphrase
+- Even if someone accesses the server, they cannot decrypt your data
 
 ## 🚀 Quick Start
 
@@ -159,7 +169,9 @@ say-it-better/
 │   │   ├── hooks/
 │   │   │   └── useAppState.js       # State management hook
 │   │   ├── services/
-│   │   │   └── storage.js           # IndexedDB storage service
+│   │   │   ├── storage.js           # IndexedDB storage service
+│   │   │   ├── encryption.js        # Client-side AES-256-GCM encryption
+│   │   │   └── cloudStorage.js      # Cloud sync service (E2E encrypted)
 │   │   ├── App.jsx                  # Main application
 │   │   ├── main.jsx                 # Entry point
 │   │   └── index.css                # Tailwind styles
@@ -192,6 +204,7 @@ say-it-better/
 | **AI** | Gemma-3-27B | Text translation (TELUS AI) |
 | | Qwen Embeddings | Theme similarity (TELUS AI) |
 | **Storage** | IndexedDB | Local browser storage |
+| | Redis Cloud | E2E encrypted cloud storage |
 
 ## 🔌 API Endpoints
 
@@ -203,6 +216,7 @@ say-it-better/
 | `/disclaimer` | GET | Get safety disclaimer text |
 | `/embeddings` | POST | Generate text embeddings |
 | `/analyze-themes` | POST | Compare themes for patterns |
+| `/cloud` | GET/POST/DELETE | E2E encrypted cloud storage operations |
 
 ### Translate Request Example
 
@@ -261,6 +275,9 @@ This project is configured for deployment on **Vercel** with serverless function
      GEMMA_TOKEN=your_gemma_api_token_here
      QWEN_EMB_ENDPOINT=https://your-qwen-endpoint.paas.ai.telus.com
      QWEN_EMB_TOKEN=your_qwen_api_token_here
+     
+     # For E2E Encrypted Cloud Sync (Redis Cloud)
+     STORAGE_KV_REDIS_URL=redis://user:password@host:port
      ```
    - Click "Deploy"
 
@@ -273,6 +290,7 @@ say-it-better/
 │   ├── analyze-themes.py   # /api/analyze-themes endpoint
 │   ├── embeddings.py       # /api/embeddings endpoint
 │   ├── disclaimer.py       # /api/disclaimer endpoint
+│   ├── cloud.py            # /api/cloud E2E encrypted storage
 │   ├── index.py            # /api health check
 │   └── requirements.txt    # Python dependencies for Vercel
 ├── frontend/               # React app (built by vercel.json)
