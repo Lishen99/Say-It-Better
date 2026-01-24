@@ -9,8 +9,8 @@ import SessionSummary from './components/SessionSummary'
 import ThemeTrendsChart from './components/ThemeTrendsChart'
 import storage from './services/storage'
 
-// In development, uses localhost:8000. In production (Vercel), API is at same origin
-const API_BASE = import.meta.env.VITE_API_BASE || ''
+// In development, uses localhost:8000. In production (Vercel), API is at /api
+const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
 function App() {
   // Check localStorage BEFORE initial render to prevent flash
