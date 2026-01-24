@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  @apply bg-gradient-to-br from-soft-50 to-calm-50 min-h-screen;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom scrollbar for a calmer feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-soft-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-calm-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-calm-400;
+}
+
+/* Smooth focus transitions */
+*:focus {
+  @apply outline-none ring-2 ring-calm-400 ring-offset-2;
+}
+
+/* Textarea placeholder styling */
+textarea::placeholder {
+  @apply text-soft-400;
+}
