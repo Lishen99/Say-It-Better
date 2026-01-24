@@ -1,7 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
-import httpx
+import urllib.request
+import urllib.error
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -40,20 +41,22 @@ class handler(BaseHTTPRequestHandler):
                 return
             
             # Call the Qwen embeddings API
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {token}"
-            }
-            
-            payload = {
+            payload = json.dumps({
                 "input": input_text,
                 "model": "Qwen/Qwen3-Embedding-8B"
-            }
+            }).encode('utf-8')
             
-            with httpx.Client(timeout=30.0) as client:
-                response = client.post(endpoint, headers=headers, json=payload)
-                response.raise_for_status()
-                result = response.json()
+            req = urllib.request.Request(
+                endpoint,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {token}"
+                }
+            )
+            
+            with urllib.request.urlopen(req, timeout=30) as response:
+                result = json.loads(response.read().decode('utf-8'))
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -61,8 +64,8 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(result).encode())
             
-        except httpx.HTTPStatusError as e:
-            self.send_response(e.response.status_code)
+        except urllib.error.HTTPError as e:
+            self.send_response(e.code)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
