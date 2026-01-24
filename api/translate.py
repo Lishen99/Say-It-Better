@@ -9,11 +9,6 @@ import os
 import urllib.request
 import urllib.error
 
-# API credentials from Vercel environment variables (set in Vercel dashboard)
-GEMMA_ENDPOINT = os.environ.get("GEMMA_ENDPOINT")
-GEMMA_TOKEN = os.environ.get("GEMMA_TOKEN")
-GEMMA_MODEL = os.environ.get("GEMMA_MODEL", "google/gemma-3-27b-it")
-
 # System prompt
 SYSTEM_PROMPT = """You are a language assistant that helps people express their thoughts more clearly. Your ONLY purpose is to rewrite emotional or unstructured text into clear, neutral, respectful language.
 
@@ -58,17 +53,21 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         """Handle translation request"""
-        # CORS headers
-        self.send_header('Access-Control-Allow-Origin', '*')
-        
         try:
+            # Get env vars inside the handler (not at module level for Vercel)
+            gemma_endpoint = os.environ.get("GEMMA_ENDPOINT")
+            gemma_token = os.environ.get("GEMMA_TOKEN")
+            gemma_model = os.environ.get("GEMMA_MODEL", "google/gemma-3-27b-it")
+            
             # Check for required env vars
-            if not GEMMA_ENDPOINT or not GEMMA_TOKEN:
+            if not gemma_endpoint or not gemma_token:
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({
-                    "error": "API not configured. Set GEMMA_ENDPOINT and GEMMA_TOKEN in Vercel environment variables."
+                    "error": "API not configured. Set GEMMA_ENDPOINT and GEMMA_TOKEN in Vercel environment variables.",
+                    "debug": f"endpoint_exists: {bool(gemma_endpoint)}, token_exists: {bool(gemma_token)}"
                 }).encode())
                 return
 
@@ -83,6 +82,7 @@ class handler(BaseHTTPRequestHandler):
             if len(raw_text) < 10:
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({
                     "error": "Please enter at least 10 characters"
@@ -113,17 +113,17 @@ JSON Response:"""
 
             # Call TELUS AI
             request_data = json.dumps({
-                "model": GEMMA_MODEL,
+                "model": gemma_model,
                 "prompt": full_prompt,
                 "temperature": 0.7,
                 "max_tokens": 1000
             }).encode('utf-8')
             
             req = urllib.request.Request(
-                f"{GEMMA_ENDPOINT}/v1/completions",
+                f"{gemma_endpoint}/v1/completions",
                 data=request_data,
                 headers={
-                    "Authorization": f"Bearer {GEMMA_TOKEN}",
+                    "Authorization": f"Bearer {gemma_token}",
                     "Content-Type": "application/json"
                 }
             )
@@ -155,27 +155,38 @@ JSON Response:"""
             # Send success response
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps(parsed).encode())
             
         except urllib.error.HTTPError as e:
+            error_body = ""
+            try:
+                error_body = e.read().decode('utf-8')[:500]
+            except:
+                pass
             self.send_response(502)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps({
-                "error": f"AI service error: {e.code}"
+                "error": f"AI service error: {e.code}",
+                "details": error_body
             }).encode())
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as je:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps({
-                "error": "Failed to parse AI response"
+                "error": f"Failed to parse AI response: {str(je)}"
             }).encode())
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps({
-                "error": str(e)
+                "error": str(e),
+                "type": type(e).__name__
             }).encode())
