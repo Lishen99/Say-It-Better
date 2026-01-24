@@ -104,7 +104,7 @@ class CloudStorageService {
       }
 
       // Upload to cloud
-      const response = await fetch(`${this.apiBaseUrl}/sync`, {
+      const response = await fetch(this.apiBaseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -113,8 +113,8 @@ class CloudStorageService {
       })
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Upload failed' }))
-        throw new Error(error.message || 'Cloud upload failed')
+        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(errorData.error || errorData.message || 'Cloud upload failed')
       }
 
       const result = await response.json()
@@ -142,7 +142,7 @@ class CloudStorageService {
 
     try {
       // Fetch encrypted data from cloud
-      const response = await fetch(`${this.apiBaseUrl}/sync/${this.userId}`, {
+      const response = await fetch(`${this.apiBaseUrl}?userId=${this.userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -154,8 +154,8 @@ class CloudStorageService {
           // No cloud data yet
           return { success: true, entries: [], isNew: true }
         }
-        const error = await response.json().catch(() => ({ message: 'Download failed' }))
-        throw new Error(error.message || 'Cloud download failed')
+        const errorData = await response.json().catch(() => ({ error: 'Download failed' }))
+        throw new Error(errorData.error || errorData.message || 'Cloud download failed')
       }
 
       const cloudData = await response.json()
@@ -263,7 +263,7 @@ class CloudStorageService {
       throw new Error('Invalid passphrase')
     }
 
-    const response = await fetch(`${this.apiBaseUrl}/sync/${this.userId}`, {
+    const response = await fetch(`${this.apiBaseUrl}?userId=${this.userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'

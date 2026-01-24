@@ -30,18 +30,34 @@ def get_redis_client():
     """Get or create Redis client connection"""
     global _redis_client
     
-    redis_url = os.getenv('STORAGE_KV_REDIS_URL')
-    if not redis_url:
+    # Get Redis connection details from environment variables
+    redis_host = os.getenv('REDIS_HOST')
+    redis_port = os.getenv('REDIS_PORT')
+    redis_password = os.getenv('REDIS_PASSWORD')
+    
+    if not redis_host or not redis_password:
+        print("Redis credentials not configured in environment variables")
         return None
     
     if _redis_client is None:
         try:
             import redis
-            _redis_client = redis.from_url(redis_url, decode_responses=True)
+            # Connect to Redis Cloud using environment variables
+            _redis_client = redis.Redis(
+                host=redis_host,
+                port=int(redis_port or 6379),
+                decode_responses=True,
+                username=os.getenv('REDIS_USERNAME', 'default'),
+                password=redis_password,
+                socket_timeout=10,
+                socket_connect_timeout=10,
+            )
             # Test connection
             _redis_client.ping()
+            print("Redis connection successful!")
         except Exception as e:
             print(f"Redis connection failed: {e}")
+            _redis_client = None
             return None
     
     return _redis_client
