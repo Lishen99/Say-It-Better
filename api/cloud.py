@@ -187,9 +187,21 @@ class handler(BaseHTTPRequestHandler):
             
             user_id = data['userId']
             
+            # Validate encryptedData structure before storing
+            encrypted_data = data['encryptedData']
+            if not isinstance(encrypted_data, dict):
+                send_json_response(self, 400, {'error': 'encryptedData must be an object'})
+                return
+            
+            required_encrypted_fields = ['encrypted', 'salt', 'iv', 'algorithm']
+            for field in required_encrypted_fields:
+                if field not in encrypted_data:
+                    send_json_response(self, 400, {'error': f'Missing required encryption field: {field}'})
+                    return
+            
             # Store the encrypted data
             stored_data = {
-                'encryptedData': data['encryptedData'],
+                'encryptedData': encrypted_data,
                 'entryCount': data.get('entryCount', 0),
                 'checksum': data['checksum'],
                 'version': data.get('version', 1),
@@ -245,7 +257,21 @@ class handler(BaseHTTPRequestHandler):
             try:
                 data = redis_client.get(f"sayitbetter:{user_id}")
                 if data:
-                    return json.loads(data)
+                    # If decode_responses=True, data is already a string, parse it
+                    # If decode_responses=False, data is bytes, decode then parse
+                    if isinstance(data, bytes):
+                        data = data.decode('utf-8')
+                    parsed_data = json.loads(data)
+                    # Ensure encryptedData structure is preserved
+                    if 'encryptedData' in parsed_data and isinstance(parsed_data['encryptedData'], dict):
+                        return parsed_data
+                    else:
+                        print(f"Warning: Invalid encryptedData structure for user {user_id}")
+                        return None
+                return None
+            except json.JSONDecodeError as e:
+                print(f"Redis JSON decode error: {e}")
+                print(f"Raw data: {data[:200] if data else 'None'}")
                 return None
             except Exception as e:
                 print(f"Redis GET error: {e}")
@@ -260,15 +286,26 @@ class handler(BaseHTTPRequestHandler):
         redis_client = get_redis_client()
         if redis_client:
             try:
+                # Ensure encryptedData structure is valid
+                if 'encryptedData' not in data or not isinstance(data['encryptedData'], dict):
+                    print(f"Error: Invalid encryptedData structure for user {user_id}")
+                    raise ValueError("Invalid encryptedData structure")
+                
+                # Serialize to JSON string
+                json_str = json.dumps(data, ensure_ascii=False)
+                
                 # Store with 90 day expiry (optional - remove if you want permanent storage)
                 redis_client.setex(
                     f"sayitbetter:{user_id}",
                     90 * 24 * 60 * 60,  # 90 days in seconds
-                    json.dumps(data)
+                    json_str
                 )
+                print(f"Successfully stored data for user {user_id}")
                 return True
             except Exception as e:
                 print(f"Redis SET error: {e}")
+                import traceback
+                traceback.print_exc()
                 # Fall back to memory
                 _memory_store[user_id] = data
                 return True

@@ -3,9 +3,9 @@ import { AlertTriangle, Shield, Heart, X, Lock } from 'lucide-react'
 function DisclaimerModal({ onAccept }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white border-2 border-gray-200 shadow-xl rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border-2 border-gray-200 shadow-xl rounded-2xl max-w-lg w-full max-h-[90vh] border-2 border-gray-200 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] text-white p-6 sticky top-0 z-10 rounded-t-2xl">
+        <div className="bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] text-white p-6 rounded-t-2xl flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#14B8A6] rounded-lg flex items-center justify-center">
               <Heart className="w-5 h-5" />
@@ -18,7 +18,7 @@ function DisclaimerModal({ onAccept }) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* What This Tool Is */}
           <div>
             <div className="flex items-center gap-3 mb-3">
@@ -100,7 +100,7 @@ function DisclaimerModal({ onAccept }) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-gray-50 border-t border-gray-100 rounded-b-2xl">
+        <div className="p-6 bg-gray-50 border-t border-gray-100 rounded-b-2xl flex-shrink-0">
           <button
             onClick={onAccept}
             className="w-full bg-[#14B8A6] hover:bg-[#0d9488] text-white py-4 px-6 font-semibold rounded-xl shadow-lg hover:shadow-md transition-all flex items-center justify-center gap-2"

@@ -65,6 +65,11 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       return
     }
     
+    if (!passphrase || passphrase.trim().length === 0) {
+      setError('Passphrase cannot be empty')
+      return
+    }
+    
     if (passphrase !== confirmPassphrase) {
       setError('Passphrases do not match')
       return
@@ -78,11 +83,14 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
     setIsLoading(true)
     
     try {
+      // Normalize passphrase (preserve exact user input, but ensure it's not just whitespace)
+      const normalizedPassphrase = passphrase
+      
       // Initialize cloud storage with username and passphrase
-      await cloudStorage.initialize(username, passphrase)
+      await cloudStorage.initialize(username, normalizedPassphrase)
       
       // Sync entries
-      const result = await cloudStorage.syncEntries(entries || [], passphrase)
+      const result = await cloudStorage.syncEntries(entries || [], normalizedPassphrase)
       
       setSuccess(`Connected! ${result.mergedCount || result.entries?.length || 0} entries synced.`)
       setMode('connected')

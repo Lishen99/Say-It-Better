@@ -38,12 +38,22 @@ class CloudStorageService {
       throw new Error('Username must be at least 3 characters')
     }
 
+    if (!passphrase || passphrase.trim().length === 0) {
+      throw new Error('Passphrase cannot be empty')
+    }
+
+    // Normalize username and passphrase (trim whitespace, but preserve internal spaces)
+    // Note: We don't trim passphrase as trailing spaces might be intentional
+    // But we ensure it's not empty
+    const normalizedUsername = username.trim().toLowerCase()
+    const normalizedPassphrase = passphrase // Keep as-is to preserve user's exact input
+
     // Generate user ID from username + passphrase
-    this.username = username.trim().toLowerCase()
-    this.userId = await this._getUserId(this.username, passphrase)
+    this.username = normalizedUsername
+    this.userId = await this._getUserId(this.username, normalizedPassphrase)
     
-    // Cache the encryption key
-    await encryption.cacheKey(passphrase)
+    // Cache the encryption key with the normalized passphrase
+    await encryption.cacheKey(normalizedPassphrase)
     
     this.isEnabled = true
     this.isAuthenticated = true
@@ -160,8 +170,37 @@ class CloudStorageService {
 
       const cloudData = await response.json()
       
+      // Validate encrypted data structure
+      if (!cloudData.encryptedData || typeof cloudData.encryptedData !== 'object') {
+        console.error('Invalid encryptedData structure:', cloudData)
+        throw new Error('Invalid encrypted data structure received from server')
+      }
+      
+      const requiredFields = ['encrypted', 'salt', 'iv', 'algorithm']
+      for (const field of requiredFields) {
+        if (!cloudData.encryptedData[field]) {
+          console.error(`Missing required field in encryptedData: ${field}`, cloudData.encryptedData)
+          throw new Error(`Invalid encrypted data: missing ${field}`)
+        }
+      }
+      
       // Decrypt the entries
-      const entries = await encryption.decrypt(cloudData.encryptedData, passphrase)
+      let entries
+      try {
+        entries = await encryption.decrypt(cloudData.encryptedData, passphrase)
+      } catch (decryptError) {
+        console.error('Decryption error:', decryptError)
+        console.error('Encrypted data structure:', cloudData.encryptedData)
+        console.error('User ID:', this.userId)
+        // Re-throw with more context
+        if (decryptError.message.includes('passphrase') || decryptError.message.includes('corrupted')) {
+          throw new Error('Incorrect passphrase or corrupted data. Please verify:\n' +
+            '1. Your username matches exactly (case-insensitive)\n' +
+            '2. Your passphrase matches exactly (including any spaces or special characters)\n' +
+            '3. You are using the same credentials as when you first set up cloud sync')
+        }
+        throw decryptError
+      }
       
       // Verify checksum
       const checksum = await encryption.calculateChecksum(entries)
