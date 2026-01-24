@@ -254,7 +254,7 @@ This project is configured for deployment on **Vercel** with serverless function
 2. **Deploy to Vercel**
    - Go to [vercel.com](https://vercel.com) and sign in with GitHub
    - Click "New Project" → Select your repository
-   - Set the **Root Directory** to `frontend`
+   - **IMPORTANT:** Leave **Root Directory** empty (or set to `.`) - do NOT set it to `frontend`
    - Add **Environment Variables** in the Vercel dashboard:
      ```
      GEMMA_ENDPOINT=https://your-gemma-endpoint.paas.ai.telus.com
@@ -275,11 +275,11 @@ say-it-better/
 │   ├── disclaimer.py       # /api/disclaimer endpoint
 │   ├── index.py            # /api health check
 │   └── requirements.txt    # Python dependencies for Vercel
-├── frontend/               # React app (set as root directory)
+├── frontend/               # React app (built by vercel.json)
 │   └── ...
 ├── backend/                # Local development only
 │   └── ...
-└── vercel.json             # Vercel configuration
+└── vercel.json             # Vercel configuration (handles build & routes)
 ```
 
 ### Environment Variables on Vercel
