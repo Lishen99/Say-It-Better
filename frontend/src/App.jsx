@@ -135,6 +135,12 @@ function App() {
   const handleAcceptDisclaimer = () => {
     localStorage.setItem('disclaimer_accepted', 'true')
     setShowDisclaimer(false)
+
+    // Auto-show guide on first time
+    if (localStorage.getItem('guide_seen') !== 'true') {
+      setShowGuide(true)
+      localStorage.setItem('guide_seen', 'true')
+    }
   }
 
   const handleTranslate = async () => {

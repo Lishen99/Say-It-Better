@@ -1,4 +1,4 @@
-import { X, Brain, Download, Shield, Sparkles, FileText, Mic, TrendingUp } from 'lucide-react'
+import { X, Brain, Download, Shield, Sparkles, FileText, Mic, TrendingUp, Link2, Mail, Cloud, Lock } from 'lucide-react'
 
 function GuideModal({ onClose }) {
   return (
@@ -95,62 +95,84 @@ function GuideModal({ onClose }) {
               </div>
             </div>
           </section>
-          {/* Features */}
+          {/* Features Grid */}
           <section>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <span className="w-1 h-5 bg-[#14B8A6] rounded-full"></span>
-              <h3 className="font-semibold text-[#2d3436]">Features</h3>
+              <h3 className="font-semibold text-[#2d3436]">Powerful Features</h3>
             </div>
+
             <div className="grid md:grid-cols-2 gap-3">
-              <div className="bg-[#fafafa] rounded-xl p-4">
+              <div className="bg-[#fafafa] rounded-xl p-4 border border-gray-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Mic className="w-4 h-4 text-[#14B8A6]" />
                   <h4 className="font-medium text-[#2d3436] text-sm">Voice Input</h4>
                 </div>
-                <p className="text-xs text-[#636e72]">Speak your thoughts with the microphone button.</p>
+                <p className="text-xs text-[#636e72]">Speak your thoughts naturally using the microphone button.</p>
               </div>
-              <div className="bg-[#fafafa] rounded-xl p-4">
+
+              <div className="bg-[#fafafa] rounded-xl p-4 border border-gray-100">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="w-4 h-4 text-[#14B8A6]" />
                   <h4 className="font-medium text-[#2d3436] text-sm">Theme Trends</h4>
                 </div>
-                <p className="text-xs text-[#636e72]">View recurring patterns over time with charts.</p>
+                <p className="text-xs text-[#636e72]">Visualize recurring emotional patterns over time.</p>
+              </div>
+
+              <div className="bg-[#fafafa] rounded-xl p-4 border border-gray-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Cloud className="w-4 h-4 text-[#14B8A6]" />
+                  <h4 className="font-medium text-[#2d3436] text-sm">Cloud Sync</h4>
+                </div>
+                <p className="text-xs text-[#636e72]">Sync across devices with End-to-End Encryption.</p>
+              </div>
+
+              <div className="bg-[#fafafa] rounded-xl p-4 border border-gray-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-[#14B8A6]" />
+                  <h4 className="font-medium text-[#2d3436] text-sm">Therapist Summary</h4>
+                </div>
+                <p className="text-xs text-[#636e72]">Generate professional reports from your history.</p>
               </div>
             </div>
           </section>
 
-          {/* Privacy Notice */}
-          <section className="bg-[#14B8A6]/10 border border-[#14B8A6]/30 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-[#14B8A6] flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-[#2d3436] text-sm mb-1">Privacy & Security</h3>
-                <p className="text-[#636e72] text-sm leading-relaxed">
-                  <strong>Your data is protected.</strong> Entries are stored locally in your browser by default.
-                  Enable cloud sync to access your data across devices with <strong>end-to-end encryption</strong> -
-                  even we cannot read your data.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Tips */}
+          {/* Sharing Section */}
           <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Brain className="w-4 h-4 text-[#14B8A6]" />
-              <h3 className="font-semibold text-[#2d3436] text-sm">Tips</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-1 h-5 bg-[#14B8A6] rounded-full"></span>
+              <h3 className="font-semibold text-[#2d3436]">Sharing & Privacy</h3>
             </div>
-            <ul className="space-y-2 text-sm">
-              <li className="border-l-2 border-[#14B8A6] pl-3 py-1 text-[#636e72]">
-                Include emotional words for better theme detection
-              </li>
-              <li className="border-l-2 border-[#0d9488] pl-3 py-1 text-[#636e72]">
-                Save PDFs to share with your therapist
-              </li>
-              <li className="border-l-2 border-[#14B8A6] pl-3 py-1 text-[#636e72]">
-                Check theme trends to spot patterns over time
-              </li>
-            </ul>
+
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 bg-[#e6fffa] rounded-lg border border-[#14B8A6]/20">
+                <Lock className="w-5 h-5 text-[#14B8A6] flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-[#2d3436] text-sm mb-1">Zero-Knowledge Secure Links</h4>
+                  <p className="text-xs text-[#636e72]">
+                    Create temporary, encrypted links to share summaries. The encryption key is in the link itself
+                    (after the #), meaning our server <strong>never sees your data</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Download className="w-4 h-4 text-[#636e72]" />
+                    <span className="text-sm font-medium text-[#2d3436]">PDF Export</span>
+                  </div>
+                  <p className="text-xs text-[#636e72]">Download professionally formatted records.</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Mail className="w-4 h-4 text-[#636e72]" />
+                    <span className="text-sm font-medium text-[#2d3436]">Email Draft</span>
+                  </div>
+                  <p className="text-xs text-[#636e72]">Open directly in your mail app.</p>
+                </div>
+              </div>
+            </div>
           </section>
         </div>
 
