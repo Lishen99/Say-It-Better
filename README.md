@@ -2,6 +2,8 @@
 
 An AI-powered emotional translation tool that helps people clearly express how they feel - without diagnosing, advising, or replacing human care.
 
+**[Live Demo](https://say-it-better-zeta.vercel.app/)**
+
 ![TechNation Hackathon 2026](https://img.shields.io/badge/TechNation-Hackathon%202026-brightgreen)
 ![AI + Healthcare](https://img.shields.io/badge/AI-Healthcare%20%26%20Wellness-blue)
 ![React](https://img.shields.io/badge/React-18-61dafb)
