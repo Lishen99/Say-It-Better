@@ -358,6 +358,11 @@ therapy, diagnosis, or medical advice.
   }
 
   const handleDeleteEntry = async (id) => {
+    // Confirmation Dialog
+    if (!window.confirm('Are you sure you want to delete this entry?')) {
+      return
+    }
+
     // Use soft delete to create a tombstone
     await storage.softDeleteEntry(id)
 

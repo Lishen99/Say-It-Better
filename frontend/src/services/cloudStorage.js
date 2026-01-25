@@ -314,11 +314,20 @@ class CloudStorageService {
       entriesMap.set(entry.id, entry)
     }
 
-    // Override with local entries if they're newer
+    // Override with local entries if they're newer or same age (local wins ties)
     for (const entry of local) {
       const existing = entriesMap.get(entry.id)
-      if (!existing || new Date(entry.timestamp) > new Date(existing.timestamp)) {
+      // Use getTime() for robust comparison
+      const entryTime = new Date(entry.timestamp).getTime()
+
+      if (!existing) {
         entriesMap.set(entry.id, entry)
+      } else {
+        const existingTime = new Date(existing.timestamp).getTime()
+        // If local is newer OR equal, keep local (User preference for local edits)
+        if (entryTime >= existingTime) {
+          entriesMap.set(entry.id, entry)
+        }
       }
     }
 
