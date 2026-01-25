@@ -78,7 +78,7 @@ function DisclaimerModal({ onAccept }) {
             <p className="text-[#636e72] leading-relaxed text-sm">
               Your text is processed only for the current request. We do not use your data for training 
               or share it with anyone. History is stored locally in your browser by default. 
-              <strong className="text-[#2d3436]">Optional cloud sync uses end-to-end encryption</strong> — 
+              <strong className="text-[#2d3436]">Optional cloud sync uses end-to-end encryption</strong> - 
               only you can decrypt your data with your passphrase.
             </p>
           </div>
@@ -105,7 +105,7 @@ function DisclaimerModal({ onAccept }) {
             onClick={onAccept}
             className="w-full bg-[#14B8A6] hover:bg-[#0d9488] text-white py-4 px-6 font-semibold rounded-xl shadow-lg hover:shadow-md transition-all flex items-center justify-center gap-2"
           >
-            <span>I Understand — Continue</span>
+            <span>I Understand - Continue</span>
           </button>
           <p className="text-center text-xs text-[#636e72] mt-4">
             By continuing, you acknowledge that this tool is a communication aid only.

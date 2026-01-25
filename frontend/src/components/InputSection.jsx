@@ -48,7 +48,7 @@ function InputSection({ rawText, setRawText, tone, setTone, onTranslate, onClear
             </span>
           </div>
           <p className="text-sm text-[#636e72] mb-3">
-            Share what's on your mind — raw, unfiltered, however it comes out.
+            Share what's on your mind - raw, unfiltered, however it comes out.
           </p>
           
           <textarea

@@ -32,7 +32,7 @@ function GuideModal({ onClose }) {
             </div>
             <p className="text-[#636e72] leading-relaxed text-sm">
               Say It Better helps you express scattered thoughts clearly. Type or speak what's on your mind, 
-              and get a structured summary with key themes identified — perfect for sharing with a therapist 
+              and get a structured summary with key themes identified - perfect for sharing with a therapist 
               or just understanding yourself better.
             </p>
           </section>
@@ -127,7 +127,7 @@ function GuideModal({ onClose }) {
                 <h3 className="font-medium text-[#2d3436] text-sm mb-1">Privacy & Security</h3>
                 <p className="text-[#636e72] text-sm leading-relaxed">
                   <strong>Your data is protected.</strong> Entries are stored locally in your browser by default. 
-                  Enable cloud sync to access your data across devices with <strong>end-to-end encryption</strong> — 
+                  Enable cloud sync to access your data across devices with <strong>end-to-end encryption</strong> - 
                   even we cannot read your data.
                 </p>
               </div>

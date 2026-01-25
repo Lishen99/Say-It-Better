@@ -15,7 +15,7 @@ function Footer() {
             </div>
             <p className="text-gray-400 leading-relaxed text-sm">
               An AI-powered communication aid that transforms raw, emotional thoughts into clear, calm language. 
-              We don't analyze your mind — we help you express it.
+              We don't analyze your mind - we help you express it.
             </p>
           </div>
 
@@ -58,9 +58,14 @@ function Footer() {
         </div>
 
         {/* Privacy Notice */}
-        <div className="mt-6 pt-6 border-t border-gray-700/50 flex items-center justify-center gap-2 text-gray-500 text-xs">
-          <Lock className="w-3.5 h-3.5" />
-          <p>Your data stays local. Nothing is stored on our servers.</p>
+        <div className="mt-6 pt-6 border-t border-gray-700/50 flex flex-col items-center justify-center gap-2 text-gray-500 text-xs text-center">
+          <div className="flex items-center gap-2">
+            <Lock className="w-3.5 h-3.5" />
+            <span className="font-medium">Privacy & Security</span>
+          </div>
+          <p className="max-w-2xl">
+            Your data is protected. Entries are stored locally in your browser by default. Enable cloud sync to access your data across devices with end-to-end encryption - even we cannot read your data.
+          </p>
         </div>
 
         {/* Copyright */}

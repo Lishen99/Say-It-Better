@@ -135,7 +135,7 @@ function OutputSection({ result, rawText, onCopy, onDownload, copied, recurringT
                 ))}
               </div>
               <p className="text-xs text-[#636e72]">
-                This is just a pattern — consider discussing with someone you trust.
+                This is just a pattern - consider discussing with someone you trust.
               </p>
             </div>
           </div>

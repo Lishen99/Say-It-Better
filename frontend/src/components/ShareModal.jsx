@@ -203,7 +203,7 @@ This is not therapy, diagnosis, or medical advice.`
           {activeTab === 'copy' && (
             <div className="space-y-4">
               <p className="text-[#636e72] text-sm font-medium">
-                Copy your summary to paste anywhere — messages, notes, or documents.
+                Copy your summary to paste anywhere - messages, notes, or documents.
               </p>
               <div className="bg-[#f8f9fa] border-2 border-[#2d3436] p-4 max-h-48 overflow-y-auto">
                 <pre className="text-xs text-[#2d3436] whitespace-pre-wrap font-mono">
@@ -264,7 +264,7 @@ This is not therapy, diagnosis, or medical advice.`
                 <span>Open Email Draft</span>
               </button>
               <p className="text-xs text-[#636e72] text-center font-medium">
-                Opens your default email app — nothing is sent automatically
+                Opens your default email app - nothing is sent automatically
               </p>
             </div>
           )}
@@ -347,7 +347,7 @@ This is not therapy, diagnosis, or medical advice.`
           <div className="bg-[#f8f9fa] border-2 border-[#2d3436] p-3 flex items-start gap-2">
             <Shield className="w-4 h-4 text-[#14B8A6] flex-shrink-0 mt-0.5" />
             <p className="text-xs text-[#636e72] font-medium">
-              You're in control. All sharing is manual — we never send your data anywhere automatically.
+              You're in control. All sharing is manual - we never send your data anywhere automatically.
             </p>
           </div>
         </div>

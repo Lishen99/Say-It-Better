@@ -173,7 +173,7 @@ function ThemeTrendsChart({ history }) {
               )}
             </p>
             <p className="text-xs text-[#636e72] mt-2 italic">
-              This is pattern observation only — not a diagnosis. Consider discussing recurring themes with someone you trust.
+              This is pattern observation only - not a diagnosis. Consider discussing recurring themes with someone you trust.
             </p>
           </div>
         </div>

@@ -653,7 +653,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   <div className="flex items-start gap-2 p-3 bg-[#f8f9fa] border-2 border-[#2d3436]">
                     <Shield className="w-4 h-4 text-[#14B8A6] flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-[#636e72] font-medium">
-                      You're in control. All sharing is manual — we never send your data anywhere automatically.
+                      You're in control. All sharing is manual - we never send your data anywhere automatically.
                     </p>
                   </div>
                 </>
