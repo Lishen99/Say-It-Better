@@ -25,7 +25,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   const [success, setSuccess] = useState('')
   const [cloudAvailable, setCloudAvailable] = useState(false)
   const [connectedUsername, setConnectedUsername] = useState('')
-  
+
   // Check cloud availability and auto-login on mount
   useEffect(() => {
     const init = async () => {
@@ -45,15 +45,15 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
           }
         }
       }
-      
+
       checkCloudStatus()
     }
-    
+
     if (isOpen) {
       init()
     }
   }, [isOpen])
-  
+
   // Update passphrase strength
   useEffect(() => {
     if (passphrase) {
@@ -62,7 +62,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       setStrength({ score: 0, strength: 'none', feedback: [] })
     }
   }, [passphrase])
-  
+
   const checkCloudStatus = async () => {
     try {
       const status = cloudStorage.getStatus()
@@ -76,54 +76,54 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       setCloudAvailable(false)
     }
   }
-  
+
   const handleConnect = async () => {
     setError('')
     setSuccess('')
-    
+
     if (!username || username.trim().length < 3) {
       setError('Username must be at least 3 characters')
       return
     }
-    
+
     if (!passphrase || passphrase.trim().length === 0) {
       setError('Passphrase cannot be empty')
       return
     }
-    
+
     if (passphrase !== confirmPassphrase) {
       setError('Passphrases do not match')
       return
     }
-    
+
     if (strength.strength === 'weak') {
       setError('Please choose a stronger passphrase')
       return
     }
-    
+
     setIsLoading(true)
-    
+
     try {
       // IMPORTANT: Use passphrase exactly as entered - any modification will cause decryption to fail
       // Do NOT trim or normalize the passphrase - it must match exactly what was used during initial setup
       const exactPassphrase = passphrase
-      
+
       // Initialize cloud storage with username and passphrase
       await cloudStorage.initialize(username, exactPassphrase)
-      
+
       // Save credentials for auto-login
-      localStorage.setItem('sayitbetter_auth', JSON.stringify({ 
-        username: username, 
-        passphrase: exactPassphrase 
+      localStorage.setItem('sayitbetter_auth', JSON.stringify({
+        username: username,
+        passphrase: exactPassphrase
       }))
-      
+
       // Sync entries using the exact same passphrase
       const result = await cloudStorage.syncEntries(entries || [], exactPassphrase)
-      
+
       setSuccess(`Connected! ${result.mergedCount || result.entries?.length || 0} entries synced.`)
       setMode('connected')
       setConnectedUsername(username.trim().toLowerCase())
-      
+
       if (onSync) {
         onSync(result.entries)
       }
@@ -133,12 +133,12 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       setIsLoading(false)
     }
   }
-  
+
   const handleSync = async () => {
     setError('')
     setSuccess('')
     setIsLoading(true)
-    
+
     try {
       // Get passphrase from local storage if not in state (for auto-login case)
       let currentPassphrase = passphrase
@@ -148,14 +148,14 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
           currentPassphrase = JSON.parse(storedAuth).passphrase
         }
       }
-      
+
       if (!currentPassphrase) {
-         throw new Error('Passphrase not found. Please reconnect.')
+        throw new Error('Passphrase not found. Please reconnect.')
       }
 
       const result = await cloudStorage.syncEntries(entries || [], currentPassphrase)
       setSuccess(`Synced ${result.mergedCount || result.entries?.length || 0} entries`)
-      
+
       if (onSync) {
         onSync(result.entries)
       }
@@ -165,7 +165,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       setIsLoading(false)
     }
   }
-  
+
   const handleDisconnect = () => {
     cloudStorage.disconnect()
     localStorage.removeItem('sayitbetter_auth')
@@ -176,11 +176,11 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
     setMode('setup')
     setSuccess('Disconnected from cloud storage')
   }
-  
+
   const handleDownloadBackup = async () => {
     setError('')
     setIsLoading(true)
-    
+
     try {
       // Get passphrase from local storage if needed
       let currentPassphrase = passphrase
@@ -190,9 +190,9 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
           currentPassphrase = JSON.parse(storedAuth).passphrase
         }
       }
-      
+
       const backup = await cloudStorage.createEncryptedBackup(entries || [], currentPassphrase)
-      
+
       // Create download link
       const url = URL.createObjectURL(backup.blob)
       const a = document.createElement('a')
@@ -202,7 +202,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      
+
       setSuccess('Encrypted backup downloaded')
     } catch (err) {
       setError(err.message || 'Failed to create backup')
@@ -210,18 +210,18 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       setIsLoading(false)
     }
   }
-  
+
   const handleRestoreBackup = async (event) => {
     const file = event.target.files?.[0]
     if (!file) return
-    
+
     setError('')
     setIsLoading(true)
-    
+
     try {
       const text = await file.text()
       const backup = JSON.parse(text)
-      
+
       // Get passphrase from local storage if needed
       let currentPassphrase = passphrase
       if (!currentPassphrase) {
@@ -233,7 +233,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
 
       const result = await cloudStorage.restoreFromBackup(backup, currentPassphrase)
       setSuccess(`Restored ${result.entryCount} entries from backup`)
-      
+
       if (onSync) {
         onSync(result.entries)
       }
@@ -243,21 +243,21 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       setIsLoading(false)
     }
   }
-  
+
   if (!isOpen) return null
-  
+
   const strengthColors = {
     none: 'bg-gray-200',
     weak: 'bg-red-500',
     moderate: 'bg-yellow-500',
     strong: 'bg-green-500'
   }
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-teal-100 rounded-t-2xl flex-shrink-0">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-teal-100 rounded-t-2xl flex-shrink-0 hc-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-teal-500 rounded-lg">
@@ -281,11 +281,11 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
             </button>
           </div>
         </div>
-        
+
         {/* Main Content */}
         <div className="p-6 overflow-y-auto flex-1">
           {/* Security Notice */}
-          <div className="p-4 mb-6 bg-teal-50 border-2 border-teal-200 rounded-xl">
+          <div className="p-4 mb-6 bg-teal-50 border-2 border-teal-200 rounded-xl hc-security-notice">
             <div className="flex items-start gap-3">
               <svg className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -293,7 +293,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
               <div>
                 <p className="text-sm font-medium text-teal-900">Zero-Knowledge Encryption</p>
                 <p className="text-xs text-teal-700 mt-1">
-                  Your data is encrypted on your device before upload. Only you can decrypt it with your passphrase. 
+                  Your data is encrypted on your device before upload. Only you can decrypt it with your passphrase.
                   <strong className="block mt-1">Even we cannot access your data.</strong>
                 </p>
               </div>
@@ -310,13 +310,13 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
               {success}
             </div>
           )}
-          
+
           {mode === 'setup' && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
                 Enter your username and passphrase to sync your data across devices. Use the same credentials on any device to access your encrypted data.
               </p>
-              
+
               {/* Username Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -337,7 +337,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">This identifies your account across devices</p>
               </div>
-              
+
               {/* Passphrase Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -378,21 +378,20 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                     )}
                   </button>
                 </div>
-                
+
                 {/* Strength Indicator */}
                 {passphrase && (
                   <div className="mt-2">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={`h-full ${strengthColors[strength.strength]} transition-all`}
                           style={{ width: `${(strength.score / 7) * 100}%` }}
                         />
                       </div>
-                      <span className={`text-xs font-medium ${
-                        strength.strength === 'strong' ? 'text-green-600' :
+                      <span className={`text-xs font-medium ${strength.strength === 'strong' ? 'text-green-600' :
                         strength.strength === 'moderate' ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
+                        }`}>
                         {strength.strength}
                       </span>
                     </div>
@@ -406,7 +405,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   </div>
                 )}
               </div>
-              
+
               {/* Confirm Passphrase */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -423,19 +422,19 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   <p className="text-xs text-red-500 mt-1">Passphrases do not match</p>
                 )}
               </div>
-              
+
               {/* Warning */}
               <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
                 <p className="text-xs text-amber-800">
-                  <strong>⚠️ Important:</strong> If you forget your username or passphrase, your data cannot be recovered. 
+                  <strong>⚠️ Important:</strong> If you forget your username or passphrase, your data cannot be recovered.
                   We do not store your credentials and cannot reset them.
                 </p>
                 <p className="text-xs text-amber-700 mt-2">
-                  <strong>For existing accounts:</strong> Enter your passphrase EXACTLY as you did when you first set up cloud sync. 
+                  <strong>For existing accounts:</strong> Enter your passphrase EXACTLY as you did when you first set up cloud sync.
                   Any difference (including spaces) will prevent decryption.
                 </p>
               </div>
-              
+
               {/* Connect Button */}
               <button
                 onClick={handleConnect}
@@ -461,7 +460,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
               </button>
             </div>
           )}
-          
+
           {mode === 'connected' && (
             <div className="space-y-4">
               {/* Status */}
@@ -476,7 +475,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   <p className="text-xs text-green-600">Logged in as <strong>{connectedUsername}</strong></p>
                 </div>
               </div>
-              
+
               {/* Actions */}
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -489,7 +488,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   </svg>
                   Sync Now
                 </button>
-                
+
                 <button
                   onClick={handleDownloadBackup}
                   disabled={isLoading}
@@ -501,7 +500,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   Download Backup
                 </button>
               </div>
-              
+
               {/* Restore from backup */}
               <div>
                 <label className="block w-full py-3 px-4 bg-white border-2 border-dashed border-gray-300 rounded-xl font-medium text-center cursor-pointer hover:bg-gray-50 transition-colors">
@@ -519,7 +518,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   />
                 </label>
               </div>
-              
+
               {/* Disconnect */}
               <button
                 onClick={handleDisconnect}
@@ -530,7 +529,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
             </div>
           )}
         </div>
-        
+
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex-shrink-0">
           <p className="text-xs text-gray-500 text-center">

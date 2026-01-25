@@ -52,7 +52,7 @@ class CloudStorageService {
     // Generate user ID from username + passphrase
     this.username = normalizedUsername
     this.userId = await this._getUserId(this.username, normalizedPassphrase)
-    
+
     // Debug logging (remove in production)
     console.log('Cloud Storage Initialize:', {
       username: this.username,
@@ -61,13 +61,13 @@ class CloudStorageService {
       passphraseFirstChar: normalizedPassphrase.charCodeAt(0),
       passphraseLastChar: normalizedPassphrase.charCodeAt(normalizedPassphrase.length - 1)
     })
-    
+
     // Cache the encryption key with the exact passphrase
     await encryption.cacheKey(normalizedPassphrase)
-    
+
     this.isEnabled = true
     this.isAuthenticated = true
-    
+
     return {
       userId: this.userId,
       username: this.username,
@@ -87,13 +87,13 @@ class CloudStorageService {
     const encoder = new TextEncoder()
     const data = encoder.encode(username + ':' + passphrase + '_sayitbetter_userid_v2')
     const hashBuffer = await window.crypto.subtle.digest('SHA-256', data)
-    
+
     // Convert to hex string (first 32 chars = 128 bits)
     const hashArray = new Uint8Array(hashBuffer)
     const hashHex = Array.from(hashArray)
       .map(b => b.toString(16).padStart(2, '0'))
       .join('')
-    
+
     return 'user_' + hashHex.substring(0, 32)
   }
 
@@ -112,7 +112,7 @@ class CloudStorageService {
     try {
       // Encrypt the entire entries array
       const encryptedPackage = await encryption.encrypt(entries, passphrase)
-      
+
       // Add metadata (NOT encrypted, but contains NO user data)
       const cloudPayload = {
         userId: this.userId,
@@ -138,7 +138,7 @@ class CloudStorageService {
       }
 
       const result = await response.json()
-      
+
       return {
         success: true,
         timestamp: result.timestamp,
@@ -179,13 +179,13 @@ class CloudStorageService {
       }
 
       const cloudData = await response.json()
-      
+
       // Validate encrypted data structure
       if (!cloudData.encryptedData || typeof cloudData.encryptedData !== 'object') {
         console.error('Invalid encryptedData structure:', cloudData)
         throw new Error('Invalid encrypted data structure received from server')
       }
-      
+
       const requiredFields = ['encrypted', 'salt', 'iv', 'algorithm']
       for (const field of requiredFields) {
         if (!cloudData.encryptedData[field]) {
@@ -193,7 +193,7 @@ class CloudStorageService {
           throw new Error(`Invalid encrypted data: missing ${field}`)
         }
       }
-      
+
       // Debug logging
       console.log('Downloading entries:', {
         userId: this.userId,
@@ -202,7 +202,7 @@ class CloudStorageService {
         salt: cloudData.encryptedData.salt?.substring(0, 20) + '...',
         iv: cloudData.encryptedData.iv?.substring(0, 10) + '...'
       })
-      
+
       // Decrypt the entries
       let entries
       try {
@@ -235,7 +235,7 @@ class CloudStorageService {
             '5. If using a password manager, verify it\'s not auto-filling a different value\n\n' +
             `User ID: ${this.userId}\n` +
             `Passphrase length: ${passphrase.length} characters`
-          
+
           console.error('Decryption failed - troubleshooting info:', {
             userId: this.userId,
             passphraseLength: passphrase.length,
@@ -243,12 +243,12 @@ class CloudStorageService {
             passphraseFirstChar: passphrase.charCodeAt(0),
             passphraseLastChar: passphrase.charCodeAt(passphrase.length - 1)
           })
-          
+
           throw new Error(errorMsg)
         }
         throw decryptError
       }
-      
+
       // Verify checksum
       const checksum = await encryption.calculateChecksum(entries)
       if (checksum !== cloudData.checksum) {
@@ -279,7 +279,7 @@ class CloudStorageService {
     try {
       // Download cloud entries
       const cloudResult = await this.downloadEntries(passphrase)
-      
+
       if (cloudResult.isNew) {
         // No cloud data, upload local
         if (localEntries.length > 0) {
@@ -289,13 +289,13 @@ class CloudStorageService {
       }
 
       const cloudEntries = cloudResult.entries || []
-      
+
       // Merge entries (latest version wins)
       const mergedEntries = this._mergeEntries(localEntries, cloudEntries)
-      
+
       // Upload merged entries
       await this.uploadEntries(mergedEntries, passphrase)
-      
+
       return {
         entries: mergedEntries,
         action: 'merged',
@@ -315,12 +315,12 @@ class CloudStorageService {
    */
   _mergeEntries(local, cloud) {
     const entriesMap = new Map()
-    
+
     // Add cloud entries first
     for (const entry of cloud) {
       entriesMap.set(entry.id, entry)
     }
-    
+
     // Override with local entries if they're newer
     for (const entry of local) {
       const existing = entriesMap.get(entry.id)
@@ -328,7 +328,7 @@ class CloudStorageService {
         entriesMap.set(entry.id, entry)
       }
     }
-    
+
     // Convert back to array and sort by timestamp (newest first)
     return Array.from(entriesMap.values())
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
@@ -361,6 +361,37 @@ class CloudStorageService {
     }
 
     return { success: true }
+  }
+
+  /**
+   * Safe delete single entry from cloud
+   * Downloads latest cloud state to ensure we don't simply overwrite new data from other devices
+   * @param {number|string} entryId - ID of entry to delete
+   * @param {string} passphrase - User's passphrase
+   */
+  async deleteCloudEntry(entryId, passphrase) {
+    if (!this.isEnabled) return
+
+    try {
+      // 1. Get latest cloud data (preserves new data from other devices)
+      const cloudResult = await this.downloadEntries(passphrase)
+
+      // If no data, nothing to delete
+      if (cloudResult.isNew || !cloudResult.entries) return
+
+      // 2. Filter out the specific entry
+      const updatedEntries = cloudResult.entries.filter(e => e.id !== entryId)
+
+      // If nothing changed (entry wasn't there), skip upload
+      if (updatedEntries.length === cloudResult.entries.length) return
+
+      // 3. Upload the preserved list
+      await this.uploadEntries(updatedEntries, passphrase)
+
+    } catch (error) {
+      console.error('Safe delete failed:', error)
+      // Don't throw, just log. Deletion failure is less critical than app crash.
+    }
   }
 
   /**
@@ -408,7 +439,7 @@ class CloudStorageService {
    */
   async createEncryptedBackup(entries, passphrase) {
     const encryptedPackage = await encryption.encrypt(entries, passphrase)
-    
+
     const backup = {
       type: 'sayitbetter_encrypted_backup',
       version: 1,
@@ -419,10 +450,10 @@ class CloudStorageService {
     }
 
     // Create downloadable blob
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { 
-      type: 'application/json' 
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: 'application/json'
     })
-    
+
     return {
       blob,
       filename: `sayitbetter_backup_${new Date().toISOString().split('T')[0]}.encrypted.json`
@@ -440,7 +471,7 @@ class CloudStorageService {
     }
 
     const entries = await encryption.decrypt(backup.encryptedData, passphrase)
-    
+
     // Verify checksum
     const checksum = await encryption.calculateChecksum(entries)
     if (checksum !== backup.checksum) {

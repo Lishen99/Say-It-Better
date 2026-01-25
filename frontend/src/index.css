@@ -25,16 +25,16 @@ body {
 }
 
 body.high-contrast ::-webkit-scrollbar {
-  background: #ffffff;
+  background: #ffffff !important;
 }
 
 body.high-contrast ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #333333 !important;
   border-radius: 4px;
 }
 
 body.high-contrast ::-webkit-scrollbar-track {
-  background: #ffffff;
+  background: #ffffff !important;
 }
 
 ::-webkit-scrollbar-track {
@@ -308,3 +308,53 @@ body.high-contrast .hc-legend-box-7 {
   stroke: #000000 !important;
   border: 1px solid #000000 !important;
 }
+/* --- High Contrast Scrollbar Overrides (Force Override) --- */
+/* Target the body scrollbar itself */
+body.high-contrast::-webkit-scrollbar,
+body.high-contrast::-webkit-scrollbar-track,
+body.high-contrast::-webkit-scrollbar-thumb {
+  border-radius: 0 !important;
+}
+
+body.high-contrast::-webkit-scrollbar {
+  width: 12px !important;
+  background-color: #ffffff !important;
+}
+
+body.high-contrast::-webkit-scrollbar-track {
+  background-color: #ffffff !important;
+  border-left: 1px solid #000000 !important;
+}
+
+body.high-contrast::-webkit-scrollbar-thumb {
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Target all descendants */
+body.high-contrast *::-webkit-scrollbar {
+  width: 12px !important;
+  background-color: #ffffff !important;
+}
+
+body.high-contrast *::-webkit-scrollbar-track {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+}
+
+body.high-contrast *::-webkit-scrollbar-thumb {
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Fix Security Notice in Cloud Modal */
+body.high-contrast .hc-security-notice {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .hc-security-notice * {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+

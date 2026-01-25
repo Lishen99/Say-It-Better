@@ -63,6 +63,16 @@ function App() {
           const { username, passphrase } = JSON.parse(storedAuth)
           await cloudStorage.initialize(username, passphrase)
           setIsCloudConnected(true)
+
+          // Initial Sync on load
+          const synced = await cloudStorage.syncEntries(entries, passphrase)
+          if (synced.entries) {
+            setHistory(synced.entries)
+            // Save any new cloud items to local
+            for (const entry of synced.entries) {
+              await storage.saveEntry(entry)
+            }
+          }
         } catch (e) {
           console.error('Auto-login failed', e)
           localStorage.removeItem('sayitbetter_auth')
@@ -132,6 +142,34 @@ function App() {
     checkSharedLink()
   }, [])
 
+  // Auto-Sync Loop (Every 15 seconds)
+  useEffect(() => {
+    if (!isCloudConnected) return
+
+    const syncLoop = setInterval(async () => {
+      try {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          const { passphrase } = JSON.parse(storedAuth)
+          const currentHistory = await storage.getAllEntries()
+          const result = await cloudStorage.syncEntries(currentHistory, passphrase)
+
+          // Only update state if we got new data merged from cloud
+          if (result && result.mergedCount > currentHistory.length) {
+            setHistory(result.entries)
+            for (const entry of result.entries) {
+              await storage.saveEntry(entry)
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Auto-sync failed:', e)
+      }
+    }, 15000) // 15 seconds
+
+    return () => clearInterval(syncLoop)
+  }, [isCloudConnected])
+
   const handleAcceptDisclaimer = () => {
     localStorage.setItem('disclaimer_accepted', 'true')
     setShowDisclaimer(false)
@@ -188,6 +226,15 @@ function App() {
       await storage.saveEntry(newEntry)
       const updatedHistory = await storage.getAllEntries()
       setHistory(updatedHistory)
+
+      // Trigger cloud sync immediately
+      if (isCloudConnected) {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          const { passphrase } = JSON.parse(storedAuth)
+          cloudStorage.syncEntries(updatedHistory, passphrase).catch(e => console.error('Immediate sync failed', e))
+        }
+      }
 
       // Analyze recurring themes if we have history
       if (history.length > 0) {
@@ -281,6 +328,15 @@ therapy, diagnosis, or medical advice.
       await storage.clearAll()
       setHistory([])
       setRecurringThemes([])
+
+      // Clear cloud too if connected
+      if (isCloudConnected) {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          const { passphrase } = JSON.parse(storedAuth)
+          cloudStorage.deleteAllCloudData(passphrase).catch(console.error)
+        }
+      }
     }
   }
 
@@ -288,6 +344,17 @@ therapy, diagnosis, or medical advice.
     await storage.deleteEntry(id)
     const updatedHistory = await storage.getAllEntries()
     setHistory(updatedHistory)
+
+    // Sync deletion (by syncing current state)
+    if (isCloudConnected) {
+      const storedAuth = localStorage.getItem('sayitbetter_auth')
+      if (storedAuth) {
+        const { passphrase } = JSON.parse(storedAuth)
+        // Safe delete: downloads first -> filters -> uploads
+        // This ensures we don't overwrite new data from other devices
+        cloudStorage.deleteCloudEntry(id, passphrase).catch(console.error)
+      }
+    }
   }
 
   return (
