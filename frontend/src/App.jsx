@@ -49,9 +49,22 @@ function App() {
       setHistory(entries)
       setStorageReady(true)
       
-      // Check cloud storage status
-      const cloudStatus = cloudStorage.getStatus()
-      setIsCloudConnected(cloudStatus.isEnabled)
+      // Auto-connect to cloud if credentials exist
+      const storedAuth = localStorage.getItem('sayitbetter_auth')
+      if (storedAuth) {
+        try {
+          const { username, passphrase } = JSON.parse(storedAuth)
+          await cloudStorage.initialize(username, passphrase)
+          setIsCloudConnected(true)
+        } catch (e) {
+          console.error('Auto-login failed', e)
+          localStorage.removeItem('sayitbetter_auth')
+        }
+      } else {
+        // Check status normally
+        const cloudStatus = cloudStorage.getStatus()
+        setIsCloudConnected(cloudStatus.isEnabled)
+      }
     }
     
     initStorage()

@@ -26,10 +26,31 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   const [cloudAvailable, setCloudAvailable] = useState(false)
   const [connectedUsername, setConnectedUsername] = useState('')
   
-  // Check cloud availability on mount
+  // Check cloud availability and auto-login on mount
   useEffect(() => {
-    if (isOpen) {
+    const init = async () => {
+      // Try to auto-login from localStorage if not already connected
+      if (!cloudStorage.isAuthenticated) {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          try {
+            const { username: storedUser, passphrase: storedPass } = JSON.parse(storedAuth)
+            await cloudStorage.initialize(storedUser, storedPass)
+            setMode('connected')
+            setConnectedUsername(storedUser)
+            setSuccess('Restored connection from saved credentials')
+          } catch (e) {
+            console.error('Auto-login failed', e)
+            localStorage.removeItem('sayitbetter_auth') // Clear invalid creds
+          }
+        }
+      }
+      
       checkCloudStatus()
+    }
+    
+    if (isOpen) {
+      init()
     }
   }, [isOpen])
   
@@ -90,6 +111,12 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       // Initialize cloud storage with username and passphrase
       await cloudStorage.initialize(username, exactPassphrase)
       
+      // Save credentials for auto-login
+      localStorage.setItem('sayitbetter_auth', JSON.stringify({ 
+        username: username, 
+        passphrase: exactPassphrase 
+      }))
+      
       // Sync entries using the exact same passphrase
       const result = await cloudStorage.syncEntries(entries || [], exactPassphrase)
       
@@ -113,7 +140,20 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
     setIsLoading(true)
     
     try {
-      const result = await cloudStorage.syncEntries(entries || [], passphrase)
+      // Get passphrase from local storage if not in state (for auto-login case)
+      let currentPassphrase = passphrase
+      if (!currentPassphrase) {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          currentPassphrase = JSON.parse(storedAuth).passphrase
+        }
+      }
+      
+      if (!currentPassphrase) {
+         throw new Error('Passphrase not found. Please reconnect.')
+      }
+
+      const result = await cloudStorage.syncEntries(entries || [], currentPassphrase)
       setSuccess(`Synced ${result.mergedCount || result.entries?.length || 0} entries`)
       
       if (onSync) {
@@ -128,6 +168,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   
   const handleDisconnect = () => {
     cloudStorage.disconnect()
+    localStorage.removeItem('sayitbetter_auth')
     setUsername('')
     setPassphrase('')
     setConfirmPassphrase('')
@@ -141,7 +182,16 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
     setIsLoading(true)
     
     try {
-      const backup = await cloudStorage.createEncryptedBackup(entries || [], passphrase)
+      // Get passphrase from local storage if needed
+      let currentPassphrase = passphrase
+      if (!currentPassphrase) {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          currentPassphrase = JSON.parse(storedAuth).passphrase
+        }
+      }
+      
+      const backup = await cloudStorage.createEncryptedBackup(entries || [], currentPassphrase)
       
       // Create download link
       const url = URL.createObjectURL(backup.blob)
@@ -172,7 +222,16 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       const text = await file.text()
       const backup = JSON.parse(text)
       
-      const result = await cloudStorage.restoreFromBackup(backup, passphrase)
+      // Get passphrase from local storage if needed
+      let currentPassphrase = passphrase
+      if (!currentPassphrase) {
+        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        if (storedAuth) {
+          currentPassphrase = JSON.parse(storedAuth).passphrase
+        }
+      }
+
+      const result = await cloudStorage.restoreFromBackup(backup, currentPassphrase)
       setSuccess(`Restored ${result.entryCount} entries from backup`)
       
       if (onSync) {
@@ -196,9 +255,9 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-teal-100 rounded-t-2xl">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-teal-100 rounded-t-2xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-teal-500 rounded-lg">
@@ -223,24 +282,23 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
           </div>
         </div>
         
-        {/* Security Notice */}
-        <div className="p-4 mx-6 mt-6 bg-teal-50 border-2 border-teal-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-teal-900">Zero-Knowledge Encryption</p>
-              <p className="text-xs text-teal-700 mt-1">
-                Your data is encrypted on your device before upload. Only you can decrypt it with your passphrase. 
-                <strong className="block mt-1">Even we cannot access your data.</strong>
-              </p>
+        {/* Main Content */}
+        <div className="p-6 overflow-y-auto flex-1">
+          {/* Security Notice */}
+          <div className="p-4 mb-6 bg-teal-50 border-2 border-teal-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-teal-900">Zero-Knowledge Encryption</p>
+                <p className="text-xs text-teal-700 mt-1">
+                  Your data is encrypted on your device before upload. Only you can decrypt it with your passphrase. 
+                  <strong className="block mt-1">Even we cannot access your data.</strong>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Main Content */}
-        <div className="p-6">
           {/* Error/Success Messages */}
           {error && (
             <div className="p-3 mb-4 bg-red-50 border-2 border-red-200 rounded-lg text-red-700 text-sm">
@@ -474,7 +532,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
         </div>
         
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+        <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex-shrink-0">
           <p className="text-xs text-gray-500 text-center">
             🔐 AES-256-GCM encryption • PBKDF2 key derivation • 100,000 iterations
           </p>
