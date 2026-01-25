@@ -51,7 +51,10 @@ function App() {
       // Migrate from old localStorage if needed
       await storage.migrateFromOldStorage()
 
-      // Load all entries
+      // PRIVACY: Auto-purge old tombstones (older than 7 days)
+      // Ensures deleted data doesn't persist indefinitely
+      await storage.purgeOldTombstones(7)
+
       // Load entries (active only for UI)
       const activeEntries = await storage.getActiveEntries()
       setHistory(activeEntries)
@@ -409,12 +412,13 @@ therapy, diagnosis, or medical advice.
           onClose={() => setShowCloudSync(false)}
           entries={history}
           onSync={async (syncedEntries) => {
-            // Update local storage with synced entries
+            // Update local storage with synced entries (including tombstones)
             for (const entry of syncedEntries) {
               await storage.saveEntry(entry)
             }
-            const updatedHistory = await storage.getAllEntries()
-            setHistory(updatedHistory)
+            // IMPORTANT: Show only active (non-deleted) entries in UI
+            const activeEntries = await storage.getActiveEntries()
+            setHistory(activeEntries)
             setIsCloudConnected(true)
           }}
         />

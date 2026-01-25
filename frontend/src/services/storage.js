@@ -85,19 +85,23 @@ class StorageService {
   /**
    * Soft Delete an entry (Mark as deleted)
    * This allows the deletion to be synced to other devices
+   * PRIVACY: Tombstone contains ONLY id, deleted flag, and timestamp - NO content
    */
   async softDeleteEntry(id) {
-    // get existing entry first to preserve data
+    // Check if entry exists
     const entries = await this.getAllEntries()
     const entry = entries.find(e => e.id === id)
 
     if (entry) {
-      const deletedEntry = {
-        ...entry,
+      // PRIVACY-FIRST: Create minimal tombstone with NO content
+      // Only store the ID and deletion time - actual data is permanently deleted
+      const tombstone = {
+        id: entry.id,
         deleted: true,
-        timestamp: new Date().toISOString() // Update timestamp so this "change" wins conflict resolution
+        timestamp: new Date().toISOString(), // For conflict resolution
+        date: entry.date // Keep date for grouping (optional, contains no sensitive data)
       }
-      return this.saveEntry(deletedEntry)
+      return this.saveEntry(tombstone)
     }
     return false
   }
@@ -110,6 +114,33 @@ class StorageService {
       return this._deleteFromIndexedDB(id)
     }
     return this._deleteFromLocalStorage(id)
+  }
+
+  /**
+   * Purge old tombstones (deleted entries) after grace period
+   * PRIVACY: Ensures deleted data doesn't persist indefinitely
+   * @param {number} daysOld - Delete tombstones older than this many days (default: 7)
+   */
+  async purgeOldTombstones(daysOld = 7) {
+    const entries = await this.getAllEntries()
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld)
+
+    let purgeCount = 0
+    for (const entry of entries) {
+      if (entry.deleted) {
+        const entryDate = new Date(entry.timestamp)
+        if (entryDate < cutoffDate) {
+          await this.deleteEntry(entry.id)
+          purgeCount++
+        }
+      }
+    }
+
+    if (purgeCount > 0) {
+      console.log(`Purged ${purgeCount} old tombstones (privacy cleanup)`)
+    }
+    return purgeCount
   }
 
   /**

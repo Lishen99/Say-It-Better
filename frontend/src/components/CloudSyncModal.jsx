@@ -12,6 +12,7 @@
 import { useState, useEffect } from 'react'
 import { encryption } from '../services/encryption.js'
 import { cloudStorage } from '../services/cloudStorage.js'
+import storage from '../services/storage.js'
 
 export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   const [mode, setMode] = useState('setup') // 'setup', 'connected', 'backup'
@@ -126,7 +127,9 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       sessionStorage.setItem('sayitbetter_auth', authData)
 
       // Sync entries using the exact same passphrase
-      const result = await cloudStorage.syncEntries(entries || [], exactPassphrase)
+      // IMPORTANT: Use getAllEntries() to include tombstones for proper delete sync
+      const allEntries = await storage.getAllEntries()
+      const result = await cloudStorage.syncEntries(allEntries, exactPassphrase)
 
       setSuccess(`Connected! ${result.mergedCount || result.entries?.length || 0} entries synced.`)
       setMode('connected')
@@ -162,7 +165,9 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
         throw new Error('Passphrase not found. Please reconnect.')
       }
 
-      const result = await cloudStorage.syncEntries(entries || [], currentPassphrase)
+      // IMPORTANT: Use getAllEntries() to include tombstones for proper delete propagation
+      const allEntries = await storage.getAllEntries()
+      const result = await cloudStorage.syncEntries(allEntries, currentPassphrase)
       setSuccess(`Synced ${result.mergedCount || result.entries?.length || 0} entries`)
 
       if (onSync) {
