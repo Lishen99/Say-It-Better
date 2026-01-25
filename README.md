@@ -14,7 +14,7 @@ Many people struggle to communicate their internal experiences clearly - especia
 - Doctor visits missing important context
 - Conversations with trusted people feeling frustrating or misunderstood
 
-**We don't analyze your mind — we help you express it.**
+**We don't analyze your mind - we help you express it.**
 
 ## Features
 
