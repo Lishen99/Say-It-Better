@@ -29,9 +29,9 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   // Check cloud availability and auto-login on mount
   useEffect(() => {
     const init = async () => {
-      // Try to auto-login from localStorage if not already connected
+      // Try to auto-login from sessionStorage if not already connected
       if (!cloudStorage.isAuthenticated) {
-        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           try {
             const { username: storedUser, passphrase: storedPass } = JSON.parse(storedAuth)
@@ -41,7 +41,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
             setSuccess('Restored connection from saved credentials')
           } catch (e) {
             console.error('Auto-login failed', e)
-            localStorage.removeItem('sayitbetter_auth') // Clear invalid creds
+            sessionStorage.removeItem('sayitbetter_auth') // Clear invalid creds
           }
         }
       }
@@ -143,7 +143,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       // Get passphrase from local storage if not in state (for auto-login case)
       let currentPassphrase = passphrase
       if (!currentPassphrase) {
-        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           currentPassphrase = JSON.parse(storedAuth).passphrase
         }
@@ -168,7 +168,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
 
   const handleDisconnect = () => {
     cloudStorage.disconnect()
-    localStorage.removeItem('sayitbetter_auth')
+    sessionStorage.removeItem('sayitbetter_auth')
     setUsername('')
     setPassphrase('')
     setConfirmPassphrase('')

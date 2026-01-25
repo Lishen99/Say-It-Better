@@ -46,9 +46,7 @@ class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         """Handle CORS preflight"""
         self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self._send_cors_headers()
         self.end_headers()
 
     def do_POST(self):
@@ -155,7 +153,7 @@ JSON Response:"""
             # Send success response
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self._send_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps(parsed).encode())
             
@@ -167,7 +165,7 @@ JSON Response:"""
                 pass
             self.send_response(502)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self._send_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps({
                 "error": f"AI service error: {e.code}",
@@ -176,7 +174,7 @@ JSON Response:"""
         except json.JSONDecodeError as je:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self._send_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps({
                 "error": f"Failed to parse AI response: {str(je)}"
@@ -184,9 +182,24 @@ JSON Response:"""
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self._send_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps({
                 "error": str(e),
                 "type": type(e).__name__
             }).encode())
+
+    def _send_cors_headers(self):
+        """Send CORS headers verifying against ALLOWED_ORIGINS env var"""
+        origin = self.headers.get('Origin', '')
+        allowed_origins = os.environ.get('ALLOWED_ORIGINS', '*')
+        
+        # If unrestricted (*) or origin matches
+        if allowed_origins == '*' or origin in allowed_origins.split(','):
+            self.send_header('Access-Control-Allow-Origin', origin if origin else '*')
+        # Friendly fallback for Vercel previews (optional, creates security/convenience tradeoff)
+        elif origin and ('.vercel.app' in origin or 'localhost' in origin):
+             self.send_header('Access-Control-Allow-Origin', origin)
+        
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')

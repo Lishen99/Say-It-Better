@@ -53,14 +53,7 @@ class CloudStorageService {
     this.username = normalizedUsername
     this.userId = await this._getUserId(this.username, normalizedPassphrase)
 
-    // Debug logging (remove in production)
-    console.log('Cloud Storage Initialize:', {
-      username: this.username,
-      userId: this.userId,
-      passphraseLength: normalizedPassphrase.length,
-      passphraseFirstChar: normalizedPassphrase.charCodeAt(0),
-      passphraseLastChar: normalizedPassphrase.charCodeAt(normalizedPassphrase.length - 1)
-    })
+    // Debug logging removed for production security
 
     // Cache the encryption key with the exact passphrase
     await encryption.cacheKey(normalizedPassphrase)

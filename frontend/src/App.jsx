@@ -57,8 +57,8 @@ function App() {
       setHistory(activeEntries)
       setStorageReady(true)
 
-      // Auto-connect to cloud if credentials exist
-      const storedAuth = localStorage.getItem('sayitbetter_auth')
+      // Auto-connect to cloud if credentials exist (session only)
+      const storedAuth = sessionStorage.getItem('sayitbetter_auth')
       if (storedAuth) {
         try {
           const { username, passphrase } = JSON.parse(storedAuth)
@@ -66,17 +66,27 @@ function App() {
           setIsCloudConnected(true)
 
           // Initial Sync on load
-          const synced = await cloudStorage.syncEntries(entries, passphrase)
+          // IMPORTANT: Must use getAllEntries() because 'entries' state is still empty [] at this point!
+          const localEntries = await storage.getAllEntries()
+          const synced = await cloudStorage.syncEntries(localEntries, passphrase)
+
           if (synced.entries) {
-            setHistory(synced.entries)
+            // Update state with result (merged)
+            const resultList = synced.entries
+
             // Save any new cloud items to local
-            for (const entry of synced.entries) {
+            for (const entry of resultList) {
               await storage.saveEntry(entry)
             }
+
+            // Update UI with active entries only
+            const active = await storage.getActiveEntries()
+            setHistory(active)
           }
         } catch (e) {
-          console.error('Auto-login failed', e)
-          localStorage.removeItem('sayitbetter_auth')
+          console.error('Auto-login sync warning:', e)
+          // Do NOT remove auth token on network error. Only user should disconnect.
+          // We just leave isCloudConnected as false (default) if it fails.
         }
       } else {
         // Check status normally
@@ -149,7 +159,7 @@ function App() {
 
     const syncLoop = setInterval(async () => {
       try {
-        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           const { passphrase } = JSON.parse(storedAuth)
           // Sync ALL entries (including tombstones)
@@ -234,7 +244,7 @@ function App() {
 
       // Trigger cloud sync immediately
       if (isCloudConnected) {
-        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           const { passphrase } = JSON.parse(storedAuth)
           // Sync all (including tombstones)
@@ -338,7 +348,7 @@ therapy, diagnosis, or medical advice.
 
       // Clear cloud too if connected
       if (isCloudConnected) {
-        const storedAuth = localStorage.getItem('sayitbetter_auth')
+        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           const { passphrase } = JSON.parse(storedAuth)
           cloudStorage.deleteAllCloudData(passphrase).catch(console.error)
@@ -357,7 +367,7 @@ therapy, diagnosis, or medical advice.
 
     // Sync tombstone immediately
     if (isCloudConnected) {
-      const storedAuth = localStorage.getItem('sayitbetter_auth')
+      const storedAuth = sessionStorage.getItem('sayitbetter_auth')
       if (storedAuth) {
         const { passphrase } = JSON.parse(storedAuth)
         // We must sync the WHOLE list (including the new tombstone)
