@@ -15,20 +15,20 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
   // Filter history based on date range
   const filteredHistory = useMemo(() => {
     let filtered = history
-    
+
     if (dateRange !== 'all') {
       const now = new Date()
       const cutoff = new Date()
-      
+
       if (dateRange === 'week') {
         cutoff.setDate(now.getDate() - 7)
       } else if (dateRange === 'month') {
         cutoff.setMonth(now.getMonth() - 1)
       }
-      
+
       filtered = history.filter(entry => new Date(entry.timestamp) >= cutoff)
     }
-    
+
     // Only include selected entries
     return filtered.filter(entry => selectedEntries.has(entry.id))
   }, [history, dateRange, selectedEntries])
@@ -36,16 +36,16 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
   // Get all entries for selection (filtered by date only)
   const entriesForSelection = useMemo(() => {
     if (dateRange === 'all') return history
-    
+
     const now = new Date()
     const cutoff = new Date()
-    
+
     if (dateRange === 'week') {
       cutoff.setDate(now.getDate() - 7)
     } else if (dateRange === 'month') {
       cutoff.setMonth(now.getMonth() - 1)
     }
-    
+
     return history.filter(entry => new Date(entry.timestamp) >= cutoff)
   }, [history, dateRange])
 
@@ -58,7 +58,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
         themeCounts[themeName] = (themeCounts[themeName] || 0) + 1
       })
     })
-    
+
     return Object.entries(themeCounts)
       .sort((a, b) => b[1] - a[1])
       .map(([theme, count]) => ({ theme, count }))
@@ -97,7 +97,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
   // Generate the summary text
   const generateSummaryText = () => {
     const lines = []
-    
+
     lines.push('═══════════════════════════════════════════════════════════════')
     lines.push('                    SAY IT BETTER - SESSION SUMMARY')
     lines.push('═══════════════════════════════════════════════════════════════')
@@ -110,29 +110,28 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
     lines.push('                        RECURRING THEMES')
     lines.push('───────────────────────────────────────────────────────────────')
     lines.push('')
-    
+
     if (themeAnalysis.length > 0) {
       themeAnalysis.forEach(({ theme, count }) => {
-        const bar = '█'.repeat(Math.min(count * 2, 20))
-        lines.push(`  ${theme}: ${bar} (${count} ${count === 1 ? 'time' : 'times'})`)
+        lines.push(`  ${theme}: (${count} ${count === 1 ? 'time' : 'times'})`)
       })
     } else {
       lines.push('  No themes recorded yet.')
     }
-    
+
     lines.push('')
     lines.push('───────────────────────────────────────────────────────────────')
     lines.push('                      ENTRIES BY DATE')
     lines.push('───────────────────────────────────────────────────────────────')
-    
+
     Object.entries(groupedByDate).forEach(([date, entries]) => {
       lines.push('')
       lines.push(`▸ ${date}`)
       lines.push('')
-      
+
       entries.forEach((entry, index) => {
         lines.push(`  [${index + 1}] ${new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
-        
+
         if (includeRawInput && entry.rawInput) {
           lines.push('')
           lines.push('      --- Original Text ---')
@@ -143,32 +142,32 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
           lines.push('      --- End Original ---')
           lines.push('')
         }
-        
+
         lines.push(`      Summary: ${entry.summary}`)
-        
+
         if (entry.themes?.length > 0) {
           const themeNames = entry.themes.map(t => typeof t === 'string' ? t : t.theme)
           lines.push(`      Themes: ${themeNames.join(', ')}`)
         }
-        
+
         lines.push('')
       })
     })
-    
+
     lines.push('───────────────────────────────────────────────────────────────')
     lines.push('                    SHARE-READY SUMMARIES')
     lines.push('───────────────────────────────────────────────────────────────')
     lines.push('')
     lines.push('These statements are ready to share in conversation:')
     lines.push('')
-    
+
     filteredHistory.forEach((entry, index) => {
       if (entry.shareReady) {
         lines.push(`  ${index + 1}. "${entry.shareReady}"`)
         lines.push('')
       }
     })
-    
+
     lines.push('═══════════════════════════════════════════════════════════════')
     lines.push('')
     lines.push('IMPORTANT NOTICE:')
@@ -177,7 +176,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
     lines.push('Please discuss these observations with a qualified professional.')
     lines.push('')
     lines.push('═══════════════════════════════════════════════════════════════')
-    
+
     return lines.join('\n')
   }
 
@@ -204,16 +203,16 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
     // Header
     doc.setFillColor(20, 184, 166)
     doc.rect(0, 0, pageWidth, 45, 'F')
-    
+
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(24)
     doc.setFont('helvetica', 'bold')
     doc.text('Say It Better', margin, 25)
-    
+
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
     doc.text('Session Summary for Healthcare Provider', margin, 38)
-    
+
     y = 60
 
     // Meta info
@@ -230,10 +229,10 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
       doc.setFont('helvetica', 'bold')
       doc.text('Recurring Themes', margin, y)
       y += 10
-      
+
       doc.setFontSize(10)
       doc.setFont('helvetica', 'normal')
-      
+
       themeAnalysis.slice(0, 6).forEach(({ theme, count }) => {
         addNewPageIfNeeded(8)
         doc.setFillColor(204, 251, 241)
@@ -255,7 +254,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
 
     Object.entries(groupedByDate).forEach(([date, entries]) => {
       addNewPageIfNeeded(30)
-      
+
       // Date header
       doc.setFillColor(241, 245, 249)
       doc.roundedRect(margin, y - 4, contentWidth, 10, 2, 2, 'F')
@@ -267,24 +266,24 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
 
       entries.forEach((entry, index) => {
         addNewPageIfNeeded(50)
-        
+
         // Entry box
         doc.setDrawColor(226, 232, 240)
         doc.setFillColor(255, 255, 255)
-        
+
         // Calculate height needed
         const summaryLines = doc.splitTextToSize(entry.summary || '', contentWidth - 10)
         const themeNames = entry.themes?.map(t => typeof t === 'string' ? t : t.theme).join(', ') || ''
         const shareLines = doc.splitTextToSize(entry.shareReady || '', contentWidth - 10)
-        
+
         let boxHeight = 25 + (summaryLines.length * 5) + (shareLines.length * 5)
         if (includeRawInput && entry.rawInput) {
           const rawLines = doc.splitTextToSize(entry.rawInput, contentWidth - 15)
           boxHeight += 10 + (rawLines.length * 4)
         }
-        
+
         addNewPageIfNeeded(boxHeight + 10)
-        
+
         // Time
         doc.setTextColor(100, 116, 139)
         doc.setFontSize(9)
@@ -333,7 +332,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
           doc.text(shareLines, margin + 3, y + 4)
           y += shareLines.length * 5 + 10
         }
-        
+
         y += 8
       })
     })
@@ -341,10 +340,10 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
     // Disclaimer Footer
     addNewPageIfNeeded(45)
     y = Math.max(y, pageHeight - 50)
-    
+
     doc.setFillColor(254, 242, 242)
     doc.roundedRect(margin, y, contentWidth, 35, 3, 3, 'F')
-    
+
     doc.setTextColor(185, 28, 28)
     doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
@@ -372,7 +371,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
       generatedAt: new Date().toISOString(),
       expires: Date.now() + 24 * 60 * 60 * 1000
     })))
-    
+
     const link = `${window.location.origin}/share/summary/${encoded.slice(0, 20)}...`
     setGeneratedLink(link)
     setLinkGenerated(true)
@@ -392,72 +391,74 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#2d3436]/90">
-      <div className="bg-[#f9f5f0] border-4 border-[#2d3436] shadow-[12px_12px_0px_0px_rgba(45,52,54,1)] max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-100">
         {/* Header */}
-        <div className="bg-[#2d3436] p-6 text-white flex items-center justify-between">
+        <div className="bg-white p-6 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#14B8A6] flex items-center justify-center">
-              <FileText className="w-6 h-6" />
+            <div className="w-12 h-12 bg-[#14B8A6]/10 rounded-xl flex items-center justify-center">
+              <FileText className="w-6 h-6 text-[#14B8A6]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold uppercase tracking-wide">Therapist Summary</h2>
-              <p className="text-gray-300 text-sm">Generate a summary to share with your healthcare provider</p>
+              <h2 className="text-xl font-bold text-[#2d3436]">Therapist Summary</h2>
+              <p className="text-[#636e72] text-sm">Generate a summary to share with your healthcare provider</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 transition-colors border-2 border-white/30"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-[#636e72]"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b-4 border-[#2d3436]">
+        <div className="flex border-b border-gray-100 px-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
-                activeTab === tab.id 
-                  ? 'text-white bg-[#14B8A6] border-r-2 border-[#2d3436] last:border-r-0' 
-                  : 'text-[#636e72] bg-[#f9f5f0] hover:bg-[#e8e3dd] border-r-2 border-[#2d3436] last:border-r-0'
-              }`}
+              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all relative ${activeTab === tab.id
+                  ? 'text-[#14B8A6]'
+                  : 'text-[#636e72] hover:text-[#2d3436]'
+                }`}
             >
               <tab.icon className="w-4 h-4" />
               <span className="hidden sm:inline">{tab.label}</span>
+              {activeTab === tab.id && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#14B8A6] rounded-t-full"></span>
+              )}
             </button>
           ))}
         </div>
 
         {/* Options Bar */}
-        <div className="p-4 bg-white border-b-4 border-[#2d3436] flex flex-wrap items-center gap-4">
+        <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-bold uppercase tracking-wide text-[#2d3436]">Period:</label>
-            <select 
+            <label className="text-sm font-semibold text-[#2d3436]">Period:</label>
+            <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 bg-white border-2 border-[#2d3436] text-sm font-medium"
+              className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-[#2d3436] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/20"
             >
               <option value="all">All Time ({history.length} entries)</option>
               <option value="week">Past 7 Days</option>
               <option value="month">Past 30 Days</option>
             </select>
           </div>
-          
-          <label className="flex items-center gap-2 text-sm text-[#636e72]">
-            <input 
+
+          <label className="flex items-center gap-2 text-sm text-[#636e72] cursor-pointer hover:text-[#2d3436]">
+            <input
               type="checkbox"
               checked={includeRawInput}
               onChange={(e) => setIncludeRawInput(e.target.checked)}
-              className="w-4 h-4 border-2 border-[#2d3436] accent-[#14B8A6]"
+              className="w-4 h-4 rounded border-gray-300 text-[#14B8A6] focus:ring-[#14B8A6]"
             />
             <span className="font-medium">Include original text</span>
           </label>
 
-          <div className="ml-auto text-sm text-[#636e72] font-medium">
-            {selectedEntries.size} of {entriesForSelection.length} entries selected
+          <div className="ml-auto text-sm text-[#636e72] font-medium bg-white px-3 py-1 rounded-full border border-gray-100">
+            {selectedEntries.size} of {entriesForSelection.length} selected
           </div>
         </div>
 
@@ -475,33 +476,35 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   {selectedEntries.size === entriesForSelection.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
-              
+
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {entriesForSelection.map((entry) => (
                   <label
                     key={entry.id}
-                    className={`flex items-start gap-3 p-3 border-2 cursor-pointer transition-colors ${
-                      selectedEntries.has(entry.id) 
-                        ? 'bg-[#14B8A6]/10 border-[#14B8A6]' 
-                        : 'bg-white border-[#2d3436] hover:bg-[#f8f9fa]'
-                    }`}
+                    className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all ${selectedEntries.has(entry.id)
+                        ? 'bg-[#14B8A6]/5 border-[#14B8A6] shadow-sm'
+                        : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                      }`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedEntries.has(entry.id)}
                       onChange={() => toggleEntry(entry.id)}
-                      className="mt-1 border-2 border-[#2d3436] accent-[#14B8A6]"
+                      className="mt-1 rounded border-gray-300 text-[#14B8A6] focus:ring-[#14B8A6]"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-[#636e72] font-medium">
-                          {new Date(entry.timestamp).toLocaleDateString()} at {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <span className="text-xs text-[#636e72] font-medium bg-gray-100 px-2 py-0.5 rounded-full">
+                          {new Date(entry.timestamp).toLocaleDateString()}
+                        </span>
+                        <span className="text-xs text-[#999]">
+                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-sm text-[#2d3436] line-clamp-2">{entry.summary}</p>
+                      <p className="text-sm text-[#2d3436] line-clamp-2 leading-relaxed">{entry.summary}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {entry.themes?.slice(0, 3).map((theme, i) => (
-                          <span key={i} className="text-xs bg-[#14B8A6]/10 text-[#0d9488] px-2 py-0.5 border border-[#14B8A6] font-medium">
+                          <span key={i} className="text-xs bg-gray-50 text-[#636e72] px-2 py-0.5 rounded-md border border-gray-100 font-medium">
                             {typeof theme === 'string' ? theme : theme.theme}
                           </span>
                         ))}
@@ -525,7 +528,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {themeAnalysis.slice(0, 8).map(({ theme, count }) => (
-                      <span 
+                      <span
                         key={theme}
                         className="px-3 py-1.5 bg-white text-[#2d3436] text-sm flex items-center gap-1.5 border-2 border-[#2d3436] font-medium"
                       >
@@ -543,7 +546,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                 <div className="text-center py-12 text-[#636e72]">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No entries selected</p>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('select')}
                     className="mt-2 text-[#14B8A6] hover:text-[#0d9488] font-bold"
                   >
@@ -596,9 +599,9 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   </button>
 
                   {/* Secure Link */}
-                  <div className="p-4 bg-[#f39c12]/10 border-2 border-[#f39c12]">
+                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl">
                     <div className="flex items-start gap-3 mb-4">
-                      <Clock className="w-5 h-5 text-[#f39c12] flex-shrink-0 mt-0.5" />
+                      <Clock className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="font-bold text-[#2d3436]">Secure Temporary Link</h4>
                         <p className="text-sm text-[#636e72]">Generate a link that expires in 24 hours</p>
@@ -608,7 +611,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                     {!linkGenerated ? (
                       <button
                         onClick={generateSecureLink}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#f39c12] text-white font-bold uppercase tracking-wide border-2 border-[#2d3436] shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-md"
                       >
                         <Link2 className="w-5 h-5" />
                         <span>Generate Secure Link</span>
@@ -622,7 +625,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                             Expires in 24 hours
                           </p>
                         </div>
-                        
+
                         <div className="flex gap-2">
                           <button
                             onClick={() => onCopy(generatedLink)}
@@ -650,7 +653,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
                   </div>
 
                   {/* Privacy Notice */}
-                  <div className="flex items-start gap-2 p-3 bg-[#f8f9fa] border-2 border-[#2d3436]">
+                  <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-100 rounded-lg">
                     <Shield className="w-4 h-4 text-[#14B8A6] flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-[#636e72] font-medium">
                       You're in control. All sharing is manual - we never send your data anywhere automatically.
@@ -663,19 +666,19 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
         </div>
 
         {/* Actions Footer */}
-        <div className="p-4 bg-[#f8f9fa] border-t-4 border-[#2d3436] flex justify-between items-center">
+        <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[#636e72] hover:text-[#2d3436] font-bold transition-colors"
+            className="px-4 py-2 text-[#636e72] hover:text-[#2d3436] font-medium transition-colors"
           >
             Cancel
           </button>
-          
+
           <div className="flex gap-3">
             <button
               onClick={() => onCopy(summaryText)}
               disabled={filteredHistory.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-white text-[#2d3436] border-2 border-[#2d3436] font-bold hover:bg-[#e9ecef] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-white text-[#2d3436] border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'Copied!' : 'Copy Text'}</span>
@@ -683,7 +686,7 @@ function SessionSummary({ history, onClose, onCopy, copied }) {
             <button
               onClick={handleDownloadPDF}
               disabled={filteredHistory.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-[#14B8A6] text-white border-2 border-[#2d3436] font-bold hover:bg-[#0d9488] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_#2d3436] hover:shadow-[2px_2px_0px_0px_#2d3436] hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="flex items-center gap-2 px-4 py-2 bg-[#14B8A6] text-white rounded-lg font-medium hover:bg-[#0d9488] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
             >
               <Download className="w-4 h-4" />
               <span>Download PDF</span>

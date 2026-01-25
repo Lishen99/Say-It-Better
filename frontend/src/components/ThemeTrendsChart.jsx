@@ -11,14 +11,14 @@ function ThemeTrendsChart({ history }) {
   // Analyze themes across all entries
   const themeData = useMemo(() => {
     const themeCounts = {}
-    
+
     history.forEach(entry => {
       entry.themes?.forEach(theme => {
         const themeName = typeof theme === 'string' ? theme : theme.theme
         themeCounts[themeName] = (themeCounts[themeName] || 0) + 1
       })
     })
-    
+
     return Object.entries(themeCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8) // Top 8 themes
@@ -28,24 +28,24 @@ function ThemeTrendsChart({ history }) {
   // Timeline data - themes over time (by week)
   const timelineData = useMemo(() => {
     const weeklyThemes = {}
-    
+
     history.forEach(entry => {
       const date = new Date(entry.timestamp)
       const weekStart = new Date(date)
       weekStart.setDate(date.getDate() - date.getDay())
       const weekKey = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      
+
       if (!weeklyThemes[weekKey]) {
         weeklyThemes[weekKey] = { week: weekKey, entries: 0, themes: {} }
       }
-      
+
       weeklyThemes[weekKey].entries++
       entry.themes?.forEach(theme => {
         const themeName = typeof theme === 'string' ? theme : theme.theme
         weeklyThemes[weekKey].themes[themeName] = (weeklyThemes[weekKey].themes[themeName] || 0) + 1
       })
     })
-    
+
     return Object.values(weeklyThemes).slice(-6) // Last 6 weeks
   }, [history])
 
@@ -61,7 +61,7 @@ function ThemeTrendsChart({ history }) {
   return (
     <div className="bg-white border-2 border-gray-200 shadow-lg rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] px-6 py-4 rounded-t-xl">
+      <div className="hc-header bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] px-6 py-4 rounded-t-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-white">
             <TrendingUp className="w-5 h-5" />
@@ -70,12 +70,14 @@ function ThemeTrendsChart({ history }) {
           <div className="flex gap-1">
             <button
               onClick={() => setChartType('bar')}
+              data-chart-btn={chartType === 'bar' ? 'active' : 'inactive'}
               className={`p-2 rounded-lg transition-colors ${chartType === 'bar' ? 'bg-[#14B8A6] text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
             >
               <TrendingUp className="w-4 h-4" />
             </button>
             <button
               onClick={() => setChartType('pie')}
+              data-chart-btn={chartType === 'pie' ? 'active' : 'inactive'}
               className={`p-2 rounded-lg transition-colors ${chartType === 'pie' ? 'bg-[#14B8A6] text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
             >
               <PieChartIcon className="w-4 h-4" />
@@ -94,29 +96,33 @@ function ThemeTrendsChart({ history }) {
             <BarChart data={themeData} layout="vertical" margin={{ left: 20, right: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis type="number" stroke="#64748b" fontSize={12} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                stroke="#64748b" 
+              <YAxis
+                type="category"
+                dataKey="name"
+                stroke="#64748b"
                 fontSize={12}
                 width={100}
                 tickFormatter={(value) => value.length > 12 ? value.slice(0, 12) + '...' : value}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#fff', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#fff',
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                 }}
                 formatter={(value) => [`${value} time${value !== 1 ? 's' : ''}`, 'Occurrences']}
               />
-              <Bar 
-                dataKey="count" 
-                fill="#14b8a6" 
+              <Bar
+                dataKey="count"
+                fill="#14b8a6"
                 radius={[0, 4, 4, 0]}
                 animationDuration={800}
-              />
+              >
+                {themeData.map((entry, index) => (
+                  <Cell key={`bar-cell-${index}`} fill="#14b8a6" className={`hc-chart-cell-${index}`} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -133,12 +139,12 @@ function ThemeTrendsChart({ history }) {
                 animationDuration={800}
               >
                 {themeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className={`hc-chart-cell-${index}`} />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#fff', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#fff',
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px'
                 }}
@@ -152,8 +158,8 @@ function ThemeTrendsChart({ history }) {
         <div className="flex flex-wrap justify-center gap-3 mt-4">
           {themeData.slice(0, 5).map((item, index) => (
             <div key={item.name} className="flex items-center gap-1.5">
-              <div 
-                className="w-3 h-3 rounded-sm" 
+              <div
+                className={`w-3 h-3 rounded-sm hc-legend-box-${index}`}
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
               <span className="text-xs text-[#636e72] font-medium">{item.name}</span>

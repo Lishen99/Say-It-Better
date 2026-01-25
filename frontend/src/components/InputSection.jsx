@@ -95,7 +95,7 @@ function InputSection({ rawText, setRawText, tone, setTone, onTranslate, onClear
           <button
             onClick={onTranslate}
             disabled={loading || charCount < minChars}
-            className="flex-1 min-w-[180px] flex items-center justify-center gap-2 bg-[#14B8A6] hover:bg-[#0d9488] text-white px-5 py-3 transition-all font-semibold text-sm rounded-xl shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="primary-btn flex-1 min-w-[180px] flex items-center justify-center gap-2 bg-[#14B8A6] hover:bg-[#0d9488] text-white px-5 py-3 transition-all font-semibold text-sm rounded-xl shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

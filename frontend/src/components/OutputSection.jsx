@@ -8,107 +8,112 @@ function OutputSection({ result, rawText, onCopy, onDownload, copied, recurringT
 
   // Generate PDF directly
   const handleDownloadPDF = () => {
-    const doc = new jsPDF()
-    const margin = 20
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const contentWidth = pageWidth - margin * 2
-    let y = margin
+    try {
+      const doc = new jsPDF()
+      const margin = 20
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const contentWidth = pageWidth - margin * 2
+      let y = margin
 
-    // Header - Teal brutalist style
-    doc.setFillColor(20, 184, 166)
-    doc.rect(0, 0, pageWidth, 40, 'F')
-    
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.text('SAY IT BETTER', margin, 25)
-    
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text('Analysis Results', margin, 33)
-    
-    y = 55
+      // Header - Teal brutalist style
+      doc.setFillColor(20, 184, 166)
+      doc.rect(0, 0, pageWidth, 40, 'F')
 
-    // Date
-    doc.setTextColor(99, 110, 114)
-    doc.setFontSize(10)
-    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y)
-    y += 15
-
-    // Clarified Statement Section (highlighted)
-    doc.setFillColor(20, 184, 166)
-    doc.rect(margin, y, contentWidth, 35, 'F')
-    
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'bold')
-    doc.text('CLARIFIED STATEMENT', margin + 5, y + 10)
-    
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    const shareLines = doc.splitTextToSize(result.share_ready, contentWidth - 10)
-    doc.text(shareLines, margin + 5, y + 20)
-    y += 45
-
-    // Summary Section
-    doc.setTextColor(45, 52, 54)
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'bold')
-    doc.text('SUMMARY', margin, y)
-    y += 8
-    
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    const summaryLines = doc.splitTextToSize(result.summary, contentWidth)
-    doc.text(summaryLines, margin, y)
-    y += summaryLines.length * 5 + 12
-
-    // Themes Section
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'bold')
-    doc.text('KEY THEMES IDENTIFIED', margin, y)
-    y += 10
-    
-    doc.setFontSize(10)
-    result.themes.forEach((theme, index) => {
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(22)
       doc.setFont('helvetica', 'bold')
-      doc.setTextColor(20, 184, 166)
-      doc.text(`${theme.theme}`, margin + 5, y)
-      y += 5
+      doc.text('SAY IT BETTER', margin, 25)
+
+      doc.setFontSize(10)
       doc.setFont('helvetica', 'normal')
+      doc.text('Analysis Results', margin, 33)
+
+      y = 55
+
+      // Date
       doc.setTextColor(99, 110, 114)
-      const descLines = doc.splitTextToSize(theme.description, contentWidth - 10)
-      doc.text(descLines, margin + 5, y)
-      y += descLines.length * 5 + 6
-    })
-    y += 5
+      doc.setFontSize(10)
+      doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y)
+      y += 15
 
-    // Footer disclaimer
-    if (y > 250) {
-      doc.addPage()
-      y = margin
+      // Clarified Statement Section (highlighted)
+      doc.setFillColor(20, 184, 166)
+      doc.rect(margin, y, contentWidth, 35, 'F')
+
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('CLARIFIED STATEMENT', margin + 5, y + 10)
+
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      const shareLines = doc.splitTextToSize(result.share_ready, contentWidth - 10)
+      doc.text(shareLines, margin + 5, y + 20)
+      y += 45
+
+      // Summary Section
+      doc.setTextColor(45, 52, 54)
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('SUMMARY', margin, y)
+      y += 8
+
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      const summaryLines = doc.splitTextToSize(result.summary, contentWidth)
+      doc.text(summaryLines, margin, y)
+      y += summaryLines.length * 5 + 12
+
+      // Themes Section
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('KEY THEMES IDENTIFIED', margin, y)
+      y += 10
+
+      doc.setFontSize(10)
+      result.themes.forEach((theme, index) => {
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(20, 184, 166)
+        doc.text(`${theme.theme}`, margin + 5, y)
+        y += 5
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(99, 110, 114)
+        const descLines = doc.splitTextToSize(theme.description, contentWidth - 10)
+        doc.text(descLines, margin + 5, y)
+        y += descLines.length * 5 + 6
+      })
+      y += 5
+
+      // Footer disclaimer
+      if (y > 250) {
+        doc.addPage()
+        y = margin
+      }
+
+      doc.setDrawColor(45, 52, 54)
+      doc.setLineWidth(1)
+      doc.rect(margin, y, contentWidth, 25)
+
+      doc.setTextColor(45, 52, 54)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'bold')
+      doc.text('IMPORTANT NOTICE', margin + 5, y + 8)
+      doc.setFont('helvetica', 'normal')
+      doc.text('This tool is a communication aid. It does not provide therapy, diagnosis, or medical advice.', margin + 5, y + 15)
+      doc.text('Please discuss these observations with a qualified professional.', margin + 5, y + 21)
+
+      doc.save(`say-it-better-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (e) {
+      console.error('PDF Generation Error:', e)
+      alert('Failed to generate PDF. Please try again.')
     }
-    
-    doc.setDrawColor(45, 52, 54)
-    doc.setLineWidth(1)
-    doc.rect(margin, y, contentWidth, 25)
-    
-    doc.setTextColor(45, 52, 54)
-    doc.setFontSize(8)
-    doc.setFont('helvetica', 'bold')
-    doc.text('IMPORTANT NOTICE', margin + 5, y + 8)
-    doc.setFont('helvetica', 'normal')
-    doc.text('This tool is a communication aid. It does not provide therapy, diagnosis, or medical advice.', margin + 5, y + 15)
-    doc.text('Please discuss these observations with a qualified professional.', margin + 5, y + 21)
-
-    doc.save(`say-it-better-${new Date().toISOString().split('T')[0]}.pdf`)
   }
 
   return (
     <div className="space-y-4 mb-10">
       {/* Share Modal */}
       {showShareModal && (
-        <ShareModal 
+        <ShareModal
           result={result}
           rawText={rawText}
           onClose={() => setShowShareModal(false)}

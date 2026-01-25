@@ -9,8 +9,10 @@ import SessionSummary from './components/SessionSummary'
 import ThemeTrendsChart from './components/ThemeTrendsChart'
 import GuideModal from './components/GuideModal'
 import CloudSyncModal from './components/CloudSyncModal'
+import AccessibilityMenu, { useAccessibility } from './components/AccessibilityMenu'
 import storage from './services/storage'
 import { cloudStorage } from './services/cloudStorage'
+import { importKey, decrypt } from './services/crypto'
 
 // In development, uses localhost:8000. In production (Vercel), API is at /api
 const API_BASE = import.meta.env.VITE_API_BASE || '/api'
@@ -21,6 +23,11 @@ function App() {
     // Only show disclaimer if not previously accepted
     return localStorage.getItem('disclaimer_accepted') !== 'true'
   })
+
+  // Accessibility Hook
+  const { settings: a11ySettings, toggleSetting: toggleA11y, setTextSize } = useAccessibility()
+  const [showA11yMenu, setShowA11yMenu] = useState(false)
+
   const [rawText, setRawText] = useState('')
   const [tone, setTone] = useState('neutral')
   const [result, setResult] = useState(null)
@@ -40,15 +47,15 @@ function App() {
     const initStorage = async () => {
       // Initialize IndexedDB
       await storage.init()
-      
+
       // Migrate from old localStorage if needed
       await storage.migrateFromOldStorage()
-      
+
       // Load all entries
       const entries = await storage.getAllEntries()
       setHistory(entries)
       setStorageReady(true)
-      
+
       // Auto-connect to cloud if credentials exist
       const storedAuth = localStorage.getItem('sayitbetter_auth')
       if (storedAuth) {
@@ -66,8 +73,63 @@ function App() {
         setIsCloudConnected(cloudStatus.isEnabled)
       }
     }
-    
+
     initStorage()
+
+    // Check for shared link on mount
+    const checkSharedLink = async () => {
+      const params = new URLSearchParams(window.location.search)
+      const shareId = params.get('share_id')
+      const hash = window.location.hash
+
+      // Look for key in hash
+      let keyString = ''
+      if (hash.startsWith('#key=')) {
+        keyString = hash.substring(5)
+      } else if (params.get('share')) {
+        // Legacy simulated link support (optional, or just ignore)
+        return
+      }
+
+      if (shareId && keyString) {
+        try {
+          setLoading(true)
+
+          // 1. Fetch encrypted blob
+          const response = await fetch(`${API_BASE}/share/${shareId}`)
+          if (!response.ok) {
+            if (response.status === 410) throw new Error('This shared link has expired.')
+            if (response.status === 404) throw new Error('Shared link not found.')
+            throw new Error('Failed to load shared content.')
+          }
+
+          const { encrypted_data, iv } = await response.json()
+
+          // 2. Decrypt locally
+          const key = await importKey(keyString)
+          const data = await decrypt(encrypted_data, iv, key)
+
+          setResult({
+            summary: data.summary,
+            themes: data.themes || [],
+            share_ready: data.share_ready,
+            original_length: 0,
+            translated_length: data.summary?.length || 0
+          })
+
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname)
+
+        } catch (e) {
+          console.error('Share link error:', e)
+          setError(e.message || 'Invalid or corrupted shared link.')
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+
+    checkSharedLink()
   }, [])
 
   const handleAcceptDisclaimer = () => {
@@ -103,7 +165,7 @@ function App() {
 
       const data = await response.json()
       setResult(data)
-      
+
       // Save FULL data to history (for therapist summaries)
       const newEntry = {
         id: Date.now(),
@@ -115,18 +177,18 @@ function App() {
         shareReady: data.share_ready,
         tone: tone
       }
-      
+
       // Save to IndexedDB storage
       await storage.saveEntry(newEntry)
       const updatedHistory = await storage.getAllEntries()
       setHistory(updatedHistory)
-      
+
       // Analyze recurring themes if we have history
       if (history.length > 0) {
         try {
           const pastThemes = history.flatMap(h => h.themes.map(t => t.theme))
           const currentThemes = data.themes.map(t => t.theme)
-          
+
           const themeResponse = await fetch(`${API_BASE}/analyze-themes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,7 +197,7 @@ function App() {
               past_themes: pastThemes
             })
           })
-          
+
           if (themeResponse.ok) {
             const themeData = await themeResponse.json()
             setRecurringThemes(themeData.recurring_themes || [])
@@ -145,7 +207,7 @@ function App() {
           // Non-critical - don't show error to user
         }
       }
-      
+
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.')
     } finally {
@@ -165,7 +227,7 @@ function App() {
 
   const handleDownload = () => {
     if (!result) return
-    
+
     const content = `Say It Better - Translation Result
 Generated: ${new Date().toLocaleString()}
 
@@ -190,7 +252,7 @@ ${result.share_ready}
 Note: This tool is a communication aid and does not provide 
 therapy, diagnosis, or medical advice.
 `
-    
+
     const blob = new Blob([content], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -226,7 +288,7 @@ therapy, diagnosis, or medical advice.
     <div className="min-h-screen flex flex-col bg-[#f9f5f0]">
       {/* Session Summary Modal */}
       {showSessionSummary && (
-        <SessionSummary 
+        <SessionSummary
           history={history}
           onClose={() => setShowSessionSummary(false)}
           onCopy={handleCopy}
@@ -240,7 +302,7 @@ therapy, diagnosis, or medical advice.
         <GuideModal onClose={() => setShowGuide(false)} />
       )}
       {showCloudSync && (
-        <CloudSyncModal 
+        <CloudSyncModal
           isOpen={showCloudSync}
           onClose={() => setShowCloudSync(false)}
           entries={history}
@@ -255,13 +317,23 @@ therapy, diagnosis, or medical advice.
           }}
         />
       )}
-      
-      <Header 
-        onGuideClick={() => setShowGuide(true)} 
+
+      <Header
+        onGuideClick={() => setShowGuide(true)}
         onCloudClick={() => setShowCloudSync(true)}
         isCloudConnected={isCloudConnected}
+        onAccessibilityClick={() => setShowA11yMenu(!showA11yMenu)}
       />
-      
+
+      {/* Accessibility Menu */}
+      <AccessibilityMenu
+        isOpen={showA11yMenu}
+        onClose={() => setShowA11yMenu(false)}
+        settings={a11ySettings}
+        toggleSetting={toggleA11y}
+        setTextSize={setTextSize}
+      />
+
       <main className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
         {/* Hero Section */}
         <div className="mb-12 text-center">
@@ -270,14 +342,14 @@ therapy, diagnosis, or medical advice.
             <span className="text-[#14B8A6]"> really mean</span>
           </h1>
           <p className="text-lg text-[#636e72] max-w-xl mx-auto leading-relaxed">
-            Transform scattered thoughts into clear, shareable summaries. 
+            Transform scattered thoughts into clear, shareable summaries.
             A gentle tool to help you express yourself.
           </p>
         </div>
 
         {/* Main Content */}
         <div className="space-y-8">
-          <InputSection 
+          <InputSection
             rawText={rawText}
             setRawText={setRawText}
             tone={tone}
@@ -295,7 +367,7 @@ therapy, diagnosis, or medical advice.
           )}
 
           {result && (
-            <OutputSection 
+            <OutputSection
               result={result}
               rawText={rawText}
               onCopy={handleCopy}
@@ -312,8 +384,8 @@ therapy, diagnosis, or medical advice.
 
           {/* History Section */}
           {history.length > 0 && (
-            <HistorySection 
-              history={history} 
+            <HistorySection
+              history={history}
               onOpenSummary={() => setShowSessionSummary(true)}
               onClearHistory={handleClearHistory}
               onDeleteEntry={handleDeleteEntry}
@@ -332,9 +404,9 @@ therapy, diagnosis, or medical advice.
                 Your Data Stays Private
               </h3>
               <p className="text-[#636e72] text-sm leading-relaxed">
-                By default, translations are saved <strong className="text-[#2d3436]">locally in your browser</strong>. 
-                Enable <strong className="text-[#2d3436]">cloud sync</strong> to access across devices with 
-                <strong className="text-[#14B8A6]"> end-to-end encryption</strong> — only you can decrypt your data.
+                By default, translations are saved <strong className="text-[#2d3436]">locally in your browser</strong>.
+                Enable <strong className="text-[#2d3436]">cloud sync</strong> to access across devices with
+                <strong className="text-[#14B8A6]"> end-to-end encryption</strong> - only you can decrypt your data.
               </p>
             </div>
           </div>
@@ -360,13 +432,13 @@ function HistorySection({ history, onOpenSummary, onClearHistory, onDeleteEntry 
   return (
     <div className="bg-white border border-[#e0e0e0] rounded-2xl shadow-sm overflow-hidden">
       <div className="p-4 flex items-center justify-between border-b border-[#e0e0e0] bg-[#fafafa]">
-        <button 
+        <button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-3 text-left hover:text-[#14B8A6] transition-colors"
         >
           <Calendar className="w-5 h-5 text-[#636e72]" />
           <span className="font-semibold text-[#2d3436]">Saved Entries</span>
-          <span className="text-xs bg-[#14B8A6] text-white px-2 py-0.5 rounded-full font-medium">
+          <span className="history-count-badge text-xs bg-[#14B8A6] text-white px-2 py-0.5 rounded-full font-medium">
             {history.length}
           </span>
           {expanded ? (
@@ -375,11 +447,11 @@ function HistorySection({ history, onOpenSummary, onClearHistory, onDeleteEntry 
             <ChevronDown className="w-4 h-4 text-[#636e72]" />
           )}
         </button>
-        
+
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenSummary}
-            className="flex items-center gap-2 px-4 py-2 bg-[#14B8A6] text-white text-sm font-medium rounded-lg hover:bg-[#0d9488] transition-all shadow-sm"
+            className="primary-btn flex items-center gap-2 px-4 py-2 bg-[#14B8A6] text-white text-sm font-medium rounded-lg hover:bg-[#0d9488] transition-all shadow-sm"
           >
             <FileText className="w-4 h-4" />
             <span className="hidden sm:inline">Generate Summary</span>
@@ -393,7 +465,7 @@ function HistorySection({ history, onOpenSummary, onClearHistory, onDeleteEntry 
           </button>
         </div>
       </div>
-      
+
       {expanded && (
         <div className="divide-y divide-[#e8e8e8] max-h-80 overflow-y-auto">
           {Object.entries(groupedByDate).map(([date, entries]) => (

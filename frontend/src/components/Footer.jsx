@@ -14,7 +14,7 @@ function Footer() {
               <h3 className="text-lg font-semibold">Say It Better</h3>
             </div>
             <p className="text-gray-400 leading-relaxed text-sm">
-              An AI-powered communication aid that transforms raw, emotional thoughts into clear, calm language. 
+              An AI-powered communication aid that transforms raw, emotional thoughts into clear, calm language.
               We don't analyze your mind - we help you express it.
             </p>
           </div>
@@ -63,9 +63,7 @@ function Footer() {
             <Lock className="w-3.5 h-3.5" />
             <span className="font-medium">Privacy & Security</span>
           </div>
-          <p className="max-w-2xl">
-            Your data is protected. Entries are stored locally in your browser by default. Enable cloud sync to access your data across devices with end-to-end encryption - even we cannot read your data.
-          </p>
+          Your data is protected. Entries are stored locally in your browser by default. Enable cloud sync to access your data across devices with end-to-end encryption - even we cannot read your data.
         </div>
 
         {/* Copyright */}

@@ -78,6 +78,20 @@ class HealthResponse(BaseModel):
     status: str
     message: str
 
+class ShareRequest(BaseModel):
+    encrypted_data: str = Field(..., description="Base64 encoded encrypted JSON blob")
+    iv: str = Field(..., description="Base64 encoded initialization vector")
+
+class ShareResponse(BaseModel):
+    share_id: str
+    expires_at: str
+
+class SharedAndEncryptedData(BaseModel):
+    encrypted_data: str
+    iv: str
+    created_at: float
+    expires_at: float
+
 
 # System prompt - carefully designed to avoid therapy/diagnosis
 SYSTEM_PROMPT = """You are a language assistant that helps people express their thoughts more clearly. Your ONLY purpose is to rewrite emotional or unstructured text into clear, neutral, respectful language.
@@ -349,6 +363,54 @@ async def analyze_theme_similarity(request: ThemeSimilarityRequest):
         recurring_themes=recurring_themes,
         similarity_scores=similarity_scores
     )
+
+
+# --- Secure Sharing (In-Memory for Demo) ---
+import uuid
+import time
+
+# Store shared links in memory: {share_id: SharedAndEncryptedData}
+# In production, use Redis or a Database with TTL
+shared_links = {}
+
+@app.post("/share", response_model=ShareResponse)
+async def create_share_link(request: ShareRequest):
+    """
+    Store an encrypted blob for temporary sharing.
+    The server CANNOT read this data (it doesn't have the key).
+    """
+    share_id = str(uuid.uuid4())
+    now = time.time()
+    expires_at = now + (24 * 60 * 60) # 24 hours
+    
+    shared_links[share_id] = {
+        "encrypted_data": request.encrypted_data,
+        "iv": request.iv,
+        "created_at": now,
+        "expires_at": expires_at
+    }
+    
+    # Cleanup expired links (lazy cleanup)
+    expired_ids = [sid for sid, data in shared_links.items() if data["expires_at"] < now]
+    for sid in expired_ids:
+        del shared_links[sid]
+        
+    return ShareResponse(share_id=share_id, expires_at=str(expires_at))
+
+@app.get("/share/{share_id}")
+async def get_share_link(share_id: str):
+    """Retrieve an encrypted blob by ID."""
+    if share_id not in shared_links:
+        raise HTTPException(status_code=404, detail="Link not found or expired")
+    
+    data = shared_links[share_id]
+    
+    # Check expiry
+    if data["expires_at"] < time.time():
+        del shared_links[share_id]
+        raise HTTPException(status_code=410, detail="Link has expired")
+        
+    return data
 
 
 if __name__ == "__main__":

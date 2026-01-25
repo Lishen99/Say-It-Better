@@ -5,7 +5,7 @@ function GuideModal({ onClose }) {
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-6">
       <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] border-2 border-gray-200 flex flex-col overflow-hidden">
         {/* Header - Fixed */}
-        <div className="bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] text-white p-5 rounded-t-2xl flex-shrink-0">
+        <div className="hc-header bg-gradient-to-r from-[#2d3436] to-[#3d4a4c] text-white p-5 rounded-t-2xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-[#14B8A6] rounded-lg flex items-center justify-center">
@@ -15,7 +15,7 @@ function GuideModal({ onClose }) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/20 transition-colors rounded-lg"
+              className="modal-close-btn p-2 hover:bg-white/20 transition-colors rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -31,8 +31,8 @@ function GuideModal({ onClose }) {
               <h3 className="font-semibold text-[#2d3436]">Overview</h3>
             </div>
             <p className="text-[#636e72] leading-relaxed text-sm">
-              Say It Better helps you express scattered thoughts clearly. Type or speak what's on your mind, 
-              and get a structured summary with key themes identified - perfect for sharing with a therapist 
+              Say It Better helps you express scattered thoughts clearly. Type or speak what's on your mind,
+              and get a structured summary with key themes identified - perfect for sharing with a therapist
               or just understanding yourself better.
             </p>
           </section>
@@ -54,7 +54,7 @@ function GuideModal({ onClose }) {
                   <div className="flex-1">
                     <h4 className="font-medium text-[#2d3436] mb-1">Share Your Thoughts</h4>
                     <p className="text-[#636e72] text-sm leading-relaxed">
-                      Type or paste what you're feeling. You can also use the 
+                      Type or paste what you're feeling. You can also use the
                       <span className="text-[#14B8A6] font-medium"> voice input</span> button to speak.
                     </p>
                   </div>
@@ -126,8 +126,8 @@ function GuideModal({ onClose }) {
               <div>
                 <h3 className="font-medium text-[#2d3436] text-sm mb-1">Privacy & Security</h3>
                 <p className="text-[#636e72] text-sm leading-relaxed">
-                  <strong>Your data is protected.</strong> Entries are stored locally in your browser by default. 
-                  Enable cloud sync to access your data across devices with <strong>end-to-end encryption</strong> - 
+                  <strong>Your data is protected.</strong> Entries are stored locally in your browser by default.
+                  Enable cloud sync to access your data across devices with <strong>end-to-end encryption</strong> -
                   even we cannot read your data.
                 </p>
               </div>

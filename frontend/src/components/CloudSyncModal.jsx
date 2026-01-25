@@ -272,7 +272,7 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="modal-close-btn p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

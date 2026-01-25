@@ -24,6 +24,19 @@ body {
   width: 8px;
 }
 
+body.high-contrast ::-webkit-scrollbar {
+  background: #ffffff;
+}
+
+body.high-contrast ::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 4px;
+}
+
+body.high-contrast ::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
 ::-webkit-scrollbar-track {
   background: #f9f5f0;
 }
@@ -70,4 +83,228 @@ textarea::placeholder {
 /* Outline button */
 .calm-btn-outline {
   @apply calm-btn bg-white border border-[#14B8A6] text-[#14B8A6] hover:bg-[#14B8A6]/5 px-5 py-2.5;
+}
+
+/* =========================================
+   ACCESSIBILITY FEATURES
+   ========================================= */
+
+/* 1. Reduced Motion */
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* 2. Readable Font (Dyslexia Friendly style) */
+body.readable-font {
+  font-family: 'Verdana', 'Segoe UI', sans-serif !important;
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+}
+
+body.readable-font h1,
+body.readable-font h2,
+body.readable-font h3 {
+  font-family: 'Verdana', 'Segoe UI', sans-serif !important;
+  letter-spacing: 0.02em;
+}
+
+/* 3. High Contrast Mode (Strict Binary) */
+
+/* --- GLOBAL DEFAULTS --- */
+body.high-contrast,
+body.high-contrast * {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* --- Structural Borders --- */
+body.high-contrast input,
+body.high-contrast textarea,
+body.high-contrast select,
+body.high-contrast button,
+body.high-contrast hr,
+body.high-contrast .border,
+body.high-contrast .border-2,
+body.high-contrast .calm-card,
+body.high-contrast .calm-card-elevated {
+  border: 2px solid #000000 !important;
+}
+
+/* --- INVERTED ZONES (Black BG, White Text) --- */
+body.high-contrast header,
+body.high-contrast footer,
+body.high-contrast .primary-btn {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast header *,
+body.high-contrast footer *,
+body.high-contrast .primary-btn * {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* --- HEADER LOGO (Grayscale) --- */
+body.high-contrast .hc-logo-back {
+  background-color: #cccccc !important;
+  border: 1px solid #ffffff !important;
+}
+
+body.high-contrast [data-logo="front"] {
+  background-color: #666666 !important;
+  border: 1px solid #ffffff !important;
+}
+
+body.high-contrast header img {
+  filter: none !important;
+  /* Keep inverted white icon */
+}
+
+/* --- BUTTON FIXES --- */
+
+/* Mic Button */
+body.high-contrast button:has(.lucide-mic) {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .lucide-mic {
+  stroke: #000000 !important;
+}
+
+/* Chart Type Toggle Buttons (Inside Dark Header) */
+body.high-contrast [data-chart-btn="active"] {
+  background-color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+body.high-contrast [data-chart-btn="active"] svg {
+  stroke: #000000 !important;
+}
+
+body.high-contrast [data-chart-btn="inactive"] {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast [data-chart-btn="inactive"] svg {
+  stroke: #000000 !important;
+}
+
+/* Modal Close Buttons (X) */
+body.high-contrast .modal-close-btn {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .modal-close-btn svg {
+  stroke: #000000 !important;
+}
+
+/* --- ACCESSIBILITY MENU TOGGLES --- */
+body.high-contrast .bg-gray-300 {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .bg-gray-300 .bg-white {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .bg-\[\#14B8A6\] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .bg-\[\#14B8A6\] .bg-white {
+  background-color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* --- BADGES --- */
+body.high-contrast .history-count-badge {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+/* --- DATA VISUALIZATION --- */
+body.high-contrast .recharts-bar-rectangle {
+  fill: transparent !important;
+  /* Allow Cell fill to take over */
+}
+
+/* Explicit Header Overrides */
+body.high-contrast .hc-header {
+  background: #ffffff !important;
+  border-bottom: 2px solid #000000 !important;
+  color: #000000 !important;
+}
+
+body.high-contrast .hc-header * {
+  color: #000000 !important;
+}
+
+/* Chart Theme Scales (Monochrome Variations) */
+body.high-contrast .hc-chart-cell-0,
+body.high-contrast .hc-legend-box-0 {
+  fill: #000000 !important;
+  background-color: #000000 !important;
+}
+
+body.high-contrast .hc-chart-cell-1,
+body.high-contrast .hc-legend-box-1 {
+  fill: #2d2d2d !important;
+  background-color: #2d2d2d !important;
+}
+
+body.high-contrast .hc-chart-cell-2,
+body.high-contrast .hc-legend-box-2 {
+  fill: #555555 !important;
+  background-color: #555555 !important;
+}
+
+body.high-contrast .hc-chart-cell-3,
+body.high-contrast .hc-legend-box-3 {
+  fill: #7d7d7d !important;
+  background-color: #7d7d7d !important;
+}
+
+body.high-contrast .hc-chart-cell-4,
+body.high-contrast .hc-legend-box-4 {
+  fill: #a3a3a3 !important;
+  background-color: #a3a3a3 !important;
+}
+
+body.high-contrast .hc-chart-cell-5,
+body.high-contrast .hc-legend-box-5 {
+  fill: #c0c0c0 !important;
+  background-color: #c0c0c0 !important;
+}
+
+body.high-contrast .hc-chart-cell-6,
+body.high-contrast .hc-legend-box-6 {
+  fill: #dcdcdc !important;
+  background-color: #dcdcdc !important;
+}
+
+body.high-contrast .hc-chart-cell-7,
+body.high-contrast .hc-legend-box-7 {
+  fill: #eeeeee !important;
+  background-color: #eeeeee !important;
+  stroke: #000000 !important;
+  border: 1px solid #000000 !important;
 }

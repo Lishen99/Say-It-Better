@@ -2,12 +2,12 @@
 
 An AI-powered emotional translation tool that helps people clearly express how they feel — without diagnosing, advising, or replacing human care.
 
-![Say It Better](https://img.shields.io/badge/TechNation-Hackathon%202026-brightgreen)
+![TechNation Hackathon 2026](https://img.shields.io/badge/TechNation-Hackathon%202026-brightgreen)
 ![AI + Healthcare](https://img.shields.io/badge/AI-Healthcare%20%26%20Wellness-blue)
 ![React](https://img.shields.io/badge/React-18-61dafb)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)
 
-## 🎯 Problem Statement
+## Problem Statement
 
 Many people struggle to communicate their internal experiences clearly—especially when emotions are involved. This creates problems in:
 - Therapy sessions becoming inefficient
@@ -16,66 +16,69 @@ Many people struggle to communicate their internal experiences clearly—especia
 
 **We don't analyze your mind — we help you express it.**
 
-## ✨ Features
+## Features
 
-### Core Features
-| Feature | Description |
-|---------|-------------|
-| 📝 **Raw Thought Input** | Write freely without worrying about structure |
-| 🔄 **Emotional Translation** | AI converts messy thoughts into clear, calm language |
-| 🏷️ **Key Themes Detection** | Automatically identify themes in your thoughts |
-| 📤 **Share-Ready Output** | Get polished text suitable for sharing with professionals |
-| 🎚️ **Tone Control** | Choose between neutral, personal, or clinical tones |
+### Core Capabilities
+- **Raw Thought Input:** Write freely without worrying about structure.
+- **Emotional Translation:** AI converts messy thoughts into clear, calm language.
+- **Key Themes Detection:** Automatically identify recurring themes in your thoughts.
+- **Share-Ready Output:** Get polished text suitable for sharing with professionals.
+- **Tone Control:** Choose between neutral, personal, or clinical tones.
 
-### Advanced Features
-| Feature | Description |
-|---------|-------------|
-| 🎤 **Voice Input** | Speak your thoughts using speech-to-text (Web Speech API) |
-| 💡 **Guided Prompts** | 6 categories of writing prompts to help get started |
-| 📊 **Theme Trends Chart** | Visual bar/pie charts showing recurring patterns over time |
-| 📄 **PDF Export** | Download professionally formatted PDF summaries |
-| 📧 **Email Draft** | Open pre-filled email in your default mail client |
-| 🔗 **Secure Sharing** | Generate temporary links with QR codes (24h expiry) |
-| 💾 **Local History** | All data stored in IndexedDB on your device only |
-| ☁️ **E2E Cloud Sync** | Optional encrypted sync across devices with zero-knowledge architecture |
+### Advanced Functionality
+- **Voice Input:** Speak your thoughts using Web Speech API speech-to-text.
+- **Guided Prompts:** Six categories of writing prompts to help overcome writer's block.
+- **Theme Trends Chart:** Visual analytics showing recurring patterns over time (High Contrast supported).
+- **PDF Export:** Download professionally formatted PDF summaries (Therapist-ready).
+- **Email Draft:** Open pre-filled emails in your default mail client instantly.
+- **Secure Sharing:** Generate temporary, privacy-first links (24h expiry).
+- **Zero-Knowledge Architecture:** Data is encrypted on-device before sharing - the server never sees your content.
+- **Accessibility Suite:** High Contrast mode, screen reader optimizations, and clear visual cues.
+- **Local History:** All data is stored in IndexedDB on your device by default.
+- **E2E Cloud Sync:** Optional encrypted sync across devices.
 
 ### Therapist Summary Generator
-| Feature | Description |
-|---------|-------------|
-| ✅ **Entry Selection** | Choose which entries to include in your summary |
-| 📄 **PDF Export** | Professional multi-page PDF for healthcare providers |
-| 📊 **Theme Analysis** | Automatic recurring theme detection across sessions |
-| 🔗 **Secure Link** | Generate 24h expiring links with QR codes |
-| 📧 **Email Draft** | Pre-filled email ready to send |
-| 📅 **Date Filtering** | Filter by all time, past week, or past month |
+- **"Calm" Design:** A soothing, accessible interface for reviewing progress.
+- **Entry Selection:** Choose specific entries to include.
+- **Professional Export:** Create multi-page PDF summaries for healthcare providers.
+- **Secure Link:** Share read-only summaries via encrypted, expiring links.
+- **Date Filtering:** Filter by all time, past week, or past month.
 
-## 🛡️ Safety & Ethics
+## Safety & Ethics
 
 This tool is **intentionally designed with strong boundaries**:
 
-- ❌ **No therapy or counseling**
-- ❌ **No diagnosis or labeling**
-- ❌ **No advice or recommendations**
-- ❌ **No crisis handling or risk scoring**
+- **No therapy or counseling**
+- **No diagnosis or labeling**
+- **No advice or recommendations**
+- **No crisis handling or risk scoring**
 
-### Privacy First
-- ✅ Text is processed only for the current request
-- ✅ No data used for training
-- ✅ All history stored locally in your browser by default (IndexedDB)
-- ✅ **Optional cloud sync uses end-to-end encryption (AES-256-GCM)**
-- ✅ Zero-knowledge architecture — we cannot read your encrypted data
-- ✅ Users can delete all data at any time
-- ✅ Clear disclaimer shown on first visit
+### Privacy First architecture
+- Text is processed only for the current request.
+- No data is used for training models.
+- All history is stored locally in your browser by default (IndexedDB).
+- **Optional cloud sync uses end-to-end encryption (AES-256-GCM).**
+- Zero-knowledge architecture — we cannot read your encrypted data.
+- Users can delete all data at any time.
+- Clear disclaimer shown on first visit.
+
+### Zero-Knowledge Secure Sharing
+When you generate a secure link:
+1.  **Client-Side Encryption:** Your browser generates a random AES-256 key.
+2.  **Encryption:** Your summary is encrypted locally using this key.
+3.  **Upload:** The encrypted "blob" (unreadable to the server) is uploaded with a 24h expiry.
+4.  **Link Generation:** The link contains the ID *and* the decryption key in the hash (`#key=...`).
+5.  **Privacy:** Browsers never send the hash to the server, ensuring we never see your key or data.
 
 ### End-to-End Encryption (Cloud Sync)
 When you enable cloud sync:
-- Your data is encrypted **before** leaving your device
-- Encryption uses **AES-256-GCM** with PBKDF2 key derivation (100,000 iterations)
-- Your passphrase **never leaves your device** — only encrypted blobs are stored
-- Each user gets a unique storage key derived from their username + passphrase
-- Even if someone accesses the server, they cannot decrypt your data
+- Your data is encrypted **before** leaving your device.
+- Encryption uses **AES-256-GCM** with PBKDF2 key derivation (100,000 iterations).
+- Your passphrase **never leaves your device** — only encrypted blobs are stored.
+- Each user gets a unique storage key derived from their username + passphrase.
+- Even if the server is compromised, your data remains undecryptable without your passphrase.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -124,7 +127,7 @@ npm run dev
 
 Open http://localhost:5173 in your browser.
 
-## 🔧 API Configuration
+## API Configuration
 
 The backend requires TELUS AI endpoints. Configure in `backend/.env`:
 
@@ -140,53 +143,28 @@ QWEN_EMB_TOKEN=your_qwen_api_token_here
 QWEN_EMB_MODEL=Qwen/Qwen3-Embedding-8B
 ```
 
-> ⚠️ **Security**: Never commit `.env` to version control. It's already in `.gitignore`.
+> **Security Note:** Never commit `.env` to version control. It is already included in `.gitignore`.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 say-it-better/
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   └── main.py              # FastAPI application
-│   ├── requirements.txt         # Python dependencies
-│   ├── .env.example             # Environment template
-│   └── test_api.py              # API testing script
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Header.jsx           # App header
-│   │   │   ├── Footer.jsx           # App footer
-│   │   │   ├── DisclaimerModal.jsx  # Safety disclaimer popup
-│   │   │   ├── InputSection.jsx     # Text input + voice + prompts
-│   │   │   ├── OutputSection.jsx    # Translation results + export
-│   │   │   ├── SessionSummary.jsx   # Therapist summary generator
-│   │   │   ├── ThemeTrendsChart.jsx # Visual theme analytics
-│   │   │   ├── GuidedPrompts.jsx    # Writing prompt suggestions
-│   │   │   ├── VoiceInput.jsx       # Speech-to-text input
-│   │   │   └── ShareModal.jsx       # Multi-option sharing modal
-│   │   ├── hooks/
-│   │   │   └── useAppState.js       # State management hook
-│   │   ├── services/
-│   │   │   ├── storage.js           # IndexedDB storage service
-│   │   │   ├── encryption.js        # Client-side AES-256-GCM encryption
-│   │   │   └── cloudStorage.js      # Cloud sync service (E2E encrypted)
-│   │   ├── App.jsx                  # Main application
-│   │   ├── main.jsx                 # Entry point
-│   │   └── index.css                # Tailwind styles
-│   ├── public/
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── postcss.config.js
-├── .env.example                 # Root environment template
-├── .gitignore                   # Git ignore rules
-└── README.md
+├── api/                    # Vercel Serverless Functions
+│   ├── translate.py        # /api/translate endpoint
+│   ├── analyze-themes.py   # /api/analyze-themes endpoint
+│   ├── embeddings.py       # /api/embeddings endpoint
+│   ├── disclaimer.py       # /api/disclaimer endpoint
+│   ├── cloud.py            # /api/cloud E2E encrypted storage
+│   ├── index.py            # /api health check
+│   └── requirements.txt    # Python dependencies for Vercel
+├── frontend/               # React app (built by vercel.json)
+│   └── ...
+├── backend/                # Local development only
+│   └── ...
+└── vercel.json             # Vercel configuration (handles build & routes)
 ```
 
-## 🎨 Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
@@ -206,7 +184,7 @@ say-it-better/
 | **Storage** | IndexedDB | Local browser storage |
 | | Redis Cloud | E2E encrypted cloud storage |
 
-## 🔌 API Endpoints
+## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -244,15 +222,7 @@ curl -X POST http://localhost:8000/translate \
 }
 ```
 
-## 🔮 Future Extensions
-
-- Multi-language emotional translation
-- Integration with therapy platforms
-- Accessibility-focused versions (larger text, high contrast)
-- Offline/privacy-first mode with on-device AI
-- Wearable integration for real-time emotion tracking
-
-## 🌐 Deployment (Vercel)
+## Deployment (Vercel)
 
 This project is configured for deployment on **Vercel** with serverless functions for the backend API. This keeps your API keys secure while hosting everything on a single platform.
 
@@ -316,7 +286,7 @@ Your API keys are stored securely in Vercel's environment variables (Settings �
 
 The frontend automatically detects the environment and uses the correct API URL.
 
-## 📄 License
+## License
 
 MIT License - Built for TechNation Hackathon 2026
 
