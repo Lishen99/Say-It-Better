@@ -288,8 +288,11 @@ The frontend automatically detects the environment and uses the correct API URL.
 
 ## License
 
-MIT License - Built for TechNation Hackathon 2026
+**Copyright © 2026 Lishen M. Amaraweera. All Rights Reserved.**
 
+This project is proprietary software. No part of this codebase may be used, studied, copied, modified, or distributed for any purpose (commercial or non-commercial) without explicit written permission from the owner.
+
+See the [LICENSE](./LICENSE) file for details.
 ---
 
 **Remember:** This tool helps humans talk to humans. It doesn't replace care - it enables better communication.
