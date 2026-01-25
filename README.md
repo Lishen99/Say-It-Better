@@ -1,6 +1,6 @@
 # Say It Better
 
-An AI-powered emotional translation tool that helps people clearly express how they feel — without diagnosing, advising, or replacing human care.
+An AI-powered emotional translation tool that helps people clearly express how they feel - without diagnosing, advising, or replacing human care.
 
 ![TechNation Hackathon 2026](https://img.shields.io/badge/TechNation-Hackathon%202026-brightgreen)
 ![AI + Healthcare](https://img.shields.io/badge/AI-Healthcare%20%26%20Wellness-blue)
@@ -9,7 +9,7 @@ An AI-powered emotional translation tool that helps people clearly express how t
 
 ## Problem Statement
 
-Many people struggle to communicate their internal experiences clearly—especially when emotions are involved. This creates problems in:
+Many people struggle to communicate their internal experiences clearly - especially when emotions are involved. This creates problems in:
 - Therapy sessions becoming inefficient
 - Doctor visits missing important context
 - Conversations with trusted people feeling frustrating or misunderstood
@@ -58,7 +58,7 @@ This tool is **intentionally designed with strong boundaries**:
 - No data is used for training models.
 - All history is stored locally in your browser by default (IndexedDB).
 - **Optional cloud sync uses end-to-end encryption (AES-256-GCM).**
-- Zero-knowledge architecture — we cannot read your encrypted data.
+- Zero-knowledge architecture - we cannot read your encrypted data.
 - Users can delete all data at any time.
 - Clear disclaimer shown on first visit.
 
@@ -74,7 +74,7 @@ When you generate a secure link:
 When you enable cloud sync:
 - Your data is encrypted **before** leaving your device.
 - Encryption uses **AES-256-GCM** with PBKDF2 key derivation (100,000 iterations).
-- Your passphrase **never leaves your device** — only encrypted blobs are stored.
+- Your passphrase **never leaves your device** - only encrypted blobs are stored.
 - Each user gets a unique storage key derived from their username + passphrase.
 - Even if the server is compromised, your data remains undecryptable without your passphrase.
 
@@ -292,4 +292,4 @@ MIT License - Built for TechNation Hackathon 2026
 
 ---
 
-**Remember:** This tool helps humans talk to humans. It doesn't replace care — it enables better communication.
+**Remember:** This tool helps humans talk to humans. It doesn't replace care - it enables better communication.
