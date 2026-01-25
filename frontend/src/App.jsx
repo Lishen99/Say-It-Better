@@ -52,8 +52,9 @@ function App() {
       await storage.migrateFromOldStorage()
 
       // Load all entries
-      const entries = await storage.getAllEntries()
-      setHistory(entries)
+      // Load entries (active only for UI)
+      const activeEntries = await storage.getActiveEntries()
+      setHistory(activeEntries)
       setStorageReady(true)
 
       // Auto-connect to cloud if credentials exist
@@ -151,15 +152,19 @@ function App() {
         const storedAuth = localStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           const { passphrase } = JSON.parse(storedAuth)
-          const currentHistory = await storage.getAllEntries()
-          const result = await cloudStorage.syncEntries(currentHistory, passphrase)
+          // Sync ALL entries (including tombstones)
+          const currentHistoryAll = await storage.getAllEntries()
+          const result = await cloudStorage.syncEntries(currentHistoryAll, passphrase)
 
           // Only update state if we got new data merged from cloud
-          if (result && result.mergedCount > currentHistory.length) {
-            setHistory(result.entries)
+          if (result && (result.mergedCount > currentHistoryAll.length || result.isNew)) {
+            // Save merged data
             for (const entry of result.entries) {
               await storage.saveEntry(entry)
             }
+            // Update UI with only active entries
+            const active = await storage.getActiveEntries()
+            setHistory(active)
           }
         }
       } catch (e) {
@@ -224,7 +229,7 @@ function App() {
 
       // Save to IndexedDB storage
       await storage.saveEntry(newEntry)
-      const updatedHistory = await storage.getAllEntries()
+      const updatedHistory = await storage.getActiveEntries()
       setHistory(updatedHistory)
 
       // Trigger cloud sync immediately
@@ -232,7 +237,9 @@ function App() {
         const storedAuth = localStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           const { passphrase } = JSON.parse(storedAuth)
-          cloudStorage.syncEntries(updatedHistory, passphrase).catch(e => console.error('Immediate sync failed', e))
+          // Sync all (including tombstones)
+          const allEntries = await storage.getAllEntries()
+          cloudStorage.syncEntries(allEntries, passphrase).catch(e => console.error('Immediate sync failed', e))
         }
       }
 
@@ -341,18 +348,21 @@ therapy, diagnosis, or medical advice.
   }
 
   const handleDeleteEntry = async (id) => {
-    await storage.deleteEntry(id)
-    const updatedHistory = await storage.getAllEntries()
+    // Use soft delete to create a tombstone
+    await storage.softDeleteEntry(id)
+
+    // Update active UI list
+    const updatedHistory = await storage.getActiveEntries()
     setHistory(updatedHistory)
 
-    // Sync deletion (by syncing current state)
+    // Sync tombstone immediately
     if (isCloudConnected) {
       const storedAuth = localStorage.getItem('sayitbetter_auth')
       if (storedAuth) {
         const { passphrase } = JSON.parse(storedAuth)
-        // Safe delete: downloads first -> filters -> uploads
-        // This ensures we don't overwrite new data from other devices
-        cloudStorage.deleteCloudEntry(id, passphrase).catch(console.error)
+        // We must sync the WHOLE list (including the new tombstone)
+        const allEntries = await storage.getAllEntries()
+        cloudStorage.syncEntries(allEntries, passphrase).catch(console.error)
       }
     }
   }

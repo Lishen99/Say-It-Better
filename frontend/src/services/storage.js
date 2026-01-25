@@ -41,7 +41,7 @@ class StorageService {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result
-        
+
         // Create the entries store with indexes
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
@@ -63,7 +63,8 @@ class StorageService {
   }
 
   /**
-   * Get all entries, sorted by timestamp (newest first)
+   * Get all entries (including deleted ones)
+   * Used for synchronization to ensure tombstones are propagated
    */
   async getAllEntries() {
     if (this.db) {
@@ -73,7 +74,36 @@ class StorageService {
   }
 
   /**
-   * Delete a specific entry by ID
+   * Get only active (non-deleted) entries
+   * Used for UI display
+   */
+  async getActiveEntries() {
+    const all = await this.getAllEntries()
+    return all.filter(e => !e.deleted)
+  }
+
+  /**
+   * Soft Delete an entry (Mark as deleted)
+   * This allows the deletion to be synced to other devices
+   */
+  async softDeleteEntry(id) {
+    // get existing entry first to preserve data
+    const entries = await this.getAllEntries()
+    const entry = entries.find(e => e.id === id)
+
+    if (entry) {
+      const deletedEntry = {
+        ...entry,
+        deleted: true,
+        timestamp: new Date().toISOString() // Update timestamp so this "change" wins conflict resolution
+      }
+      return this.saveEntry(deletedEntry)
+    }
+    return false
+  }
+
+  /**
+   * Hard Delete a specific entry by ID (Permanent)
    */
   async deleteEntry(id) {
     if (this.db) {
@@ -180,13 +210,13 @@ class StorageService {
     try {
       const entries = this._getAllFromLocalStorage()
       const existingIndex = entries.findIndex(e => e.id === entry.id)
-      
+
       if (existingIndex >= 0) {
         entries[existingIndex] = entry
       } else {
         entries.unshift(entry)
       }
-      
+
       // Keep max 100 entries in localStorage to manage size
       const trimmed = entries.slice(0, 100)
       localStorage.setItem('sayitbetter_entries', JSON.stringify(trimmed))
@@ -235,16 +265,16 @@ class StorageService {
       const oldData = localStorage.getItem('sayitbetter_full_history')
       if (oldData) {
         const entries = JSON.parse(oldData)
-        
+
         // Save each entry to new storage
         for (const entry of entries) {
           await this.saveEntry(entry)
         }
-        
+
         // Remove old storage
         localStorage.removeItem('sayitbetter_full_history')
         localStorage.removeItem('translation_history')
-        
+
         console.log(`Migrated ${entries.length} entries to IndexedDB`)
         return entries.length
       }
