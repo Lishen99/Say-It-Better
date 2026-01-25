@@ -83,14 +83,15 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
     setIsLoading(true)
     
     try {
-      // Normalize passphrase (preserve exact user input, but ensure it's not just whitespace)
-      const normalizedPassphrase = passphrase
+      // IMPORTANT: Use passphrase exactly as entered - any modification will cause decryption to fail
+      // Do NOT trim or normalize the passphrase - it must match exactly what was used during initial setup
+      const exactPassphrase = passphrase
       
       // Initialize cloud storage with username and passphrase
-      await cloudStorage.initialize(username, normalizedPassphrase)
+      await cloudStorage.initialize(username, exactPassphrase)
       
-      // Sync entries
-      const result = await cloudStorage.syncEntries(entries || [], normalizedPassphrase)
+      // Sync entries using the exact same passphrase
+      const result = await cloudStorage.syncEntries(entries || [], exactPassphrase)
       
       setSuccess(`Connected! ${result.mergedCount || result.entries?.length || 0} entries synced.`)
       setMode('connected')
@@ -288,8 +289,18 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                   <input
                     type={showPassphrase ? 'text' : 'password'}
                     value={passphrase}
-                    onChange={(e) => setPassphrase(e.target.value)}
+                    onChange={(e) => {
+                      // Preserve exact input - don't trim or modify
+                      setPassphrase(e.target.value)
+                    }}
+                    onBlur={(e) => {
+                      // Ensure we don't lose any characters on blur
+                      if (e.target.value !== passphrase) {
+                        setPassphrase(e.target.value)
+                      }
+                    }}
                     placeholder="Enter a secure passphrase"
+                    autoComplete="new-password"
                     className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
                   />
                   <button
@@ -360,6 +371,10 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
                 <p className="text-xs text-amber-800">
                   <strong>⚠️ Important:</strong> If you forget your username or passphrase, your data cannot be recovered. 
                   We do not store your credentials and cannot reset them.
+                </p>
+                <p className="text-xs text-amber-700 mt-2">
+                  <strong>For existing accounts:</strong> Enter your passphrase EXACTLY as you did when you first set up cloud sync. 
+                  Any difference (including spaces) will prevent decryption.
                 </p>
               </div>
               

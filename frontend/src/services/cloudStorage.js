@@ -38,21 +38,31 @@ class CloudStorageService {
       throw new Error('Username must be at least 3 characters')
     }
 
-    if (!passphrase || passphrase.trim().length === 0) {
+    if (!passphrase || passphrase.length === 0) {
       throw new Error('Passphrase cannot be empty')
     }
 
-    // Normalize username and passphrase (trim whitespace, but preserve internal spaces)
-    // Note: We don't trim passphrase as trailing spaces might be intentional
-    // But we ensure it's not empty
+    // Normalize username (lowercase, trimmed)
+    // IMPORTANT: Passphrase must be used EXACTLY as entered (no trimming)
+    // This ensures the same passphrase generates the same user ID and can decrypt the same data
     const normalizedUsername = username.trim().toLowerCase()
-    const normalizedPassphrase = passphrase // Keep as-is to preserve user's exact input
+    // Store passphrase exactly as provided - any whitespace differences will cause failures
+    const normalizedPassphrase = passphrase
 
     // Generate user ID from username + passphrase
     this.username = normalizedUsername
     this.userId = await this._getUserId(this.username, normalizedPassphrase)
     
-    // Cache the encryption key with the normalized passphrase
+    // Debug logging (remove in production)
+    console.log('Cloud Storage Initialize:', {
+      username: this.username,
+      userId: this.userId,
+      passphraseLength: normalizedPassphrase.length,
+      passphraseFirstChar: normalizedPassphrase.charCodeAt(0),
+      passphraseLastChar: normalizedPassphrase.charCodeAt(normalizedPassphrase.length - 1)
+    })
+    
+    // Cache the encryption key with the exact passphrase
     await encryption.cacheKey(normalizedPassphrase)
     
     this.isEnabled = true
@@ -184,20 +194,57 @@ class CloudStorageService {
         }
       }
       
+      // Debug logging
+      console.log('Downloading entries:', {
+        userId: this.userId,
+        passphraseLength: passphrase.length,
+        encryptedDataKeys: Object.keys(cloudData.encryptedData),
+        salt: cloudData.encryptedData.salt?.substring(0, 20) + '...',
+        iv: cloudData.encryptedData.iv?.substring(0, 10) + '...'
+      })
+      
       // Decrypt the entries
       let entries
       try {
         entries = await encryption.decrypt(cloudData.encryptedData, passphrase)
       } catch (decryptError) {
         console.error('Decryption error:', decryptError)
-        console.error('Encrypted data structure:', cloudData.encryptedData)
-        console.error('User ID:', this.userId)
+        console.error('Decryption details:', {
+          userId: this.userId,
+          passphraseLength: passphrase.length,
+          passphraseFirstChar: passphrase.charCodeAt(0),
+          passphraseLastChar: passphrase.charCodeAt(passphrase.length - 1),
+          encryptedDataStructure: {
+            hasEncrypted: !!cloudData.encryptedData.encrypted,
+            hasSalt: !!cloudData.encryptedData.salt,
+            hasIv: !!cloudData.encryptedData.iv,
+            algorithm: cloudData.encryptedData.algorithm,
+            iterations: cloudData.encryptedData.iterations
+          }
+        })
         // Re-throw with more context
         if (decryptError.message.includes('passphrase') || decryptError.message.includes('corrupted')) {
-          throw new Error('Incorrect passphrase or corrupted data. Please verify:\n' +
-            '1. Your username matches exactly (case-insensitive)\n' +
-            '2. Your passphrase matches exactly (including any spaces or special characters)\n' +
-            '3. You are using the same credentials as when you first set up cloud sync')
+          // Check if user ID matches (if it does, username+passphrase combo is correct for ID generation)
+          // But decryption failed, which means passphrase might have encoding/whitespace differences
+          const errorMsg = 'Decryption failed. This usually means the passphrase doesn\'t match exactly.\n\n' +
+            'Troubleshooting steps:\n' +
+            '1. Make sure your username is "Admin" (case doesn\'t matter)\n' +
+            '2. Try copying and pasting your passphrase to avoid typing errors\n' +
+            '3. Check for any leading or trailing spaces\n' +
+            '4. Ensure special characters match exactly (Admin1234!@#$)\n' +
+            '5. If using a password manager, verify it\'s not auto-filling a different value\n\n' +
+            `User ID: ${this.userId}\n` +
+            `Passphrase length: ${passphrase.length} characters`
+          
+          console.error('Decryption failed - troubleshooting info:', {
+            userId: this.userId,
+            passphraseLength: passphrase.length,
+            passphraseBytes: Array.from(new TextEncoder().encode(passphrase)),
+            passphraseFirstChar: passphrase.charCodeAt(0),
+            passphraseLastChar: passphrase.charCodeAt(passphrase.length - 1)
+          })
+          
+          throw new Error(errorMsg)
         }
         throw decryptError
       }
