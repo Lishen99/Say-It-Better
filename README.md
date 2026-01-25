@@ -53,12 +53,14 @@ This tool is **intentionally designed with strong boundaries**:
 - **No advice or recommendations**
 - **No crisis handling or risk scoring**
 
-### Privacy First architecture
+### Privacy First Architecture
 - Text is processed only for the current request.
 - No data is used for training models.
 - All history is stored locally in your browser by default (IndexedDB).
 - **Optional cloud sync uses end-to-end encryption (AES-256-GCM).**
 - Zero-knowledge architecture - we cannot read your encrypted data.
+- **Privacy-safe deletions** - deleted content is immediately removed; only minimal sync metadata is temporarily retained.
+- **Automatic cleanup** - sync metadata is auto-purged after 7 days.
 - Users can delete all data at any time.
 - Clear disclaimer shown on first visit.
 
@@ -77,6 +79,9 @@ When you enable cloud sync:
 - Your passphrase **never leaves your device** - only encrypted blobs are stored.
 - Each user gets a unique storage key derived from their username + passphrase.
 - Even if the server is compromised, your data remains undecryptable without your passphrase.
+- **Multi-device sync** - entries sync automatically every 15 seconds across all your devices.
+- **Persistent login** - stay connected across browser sessions (credentials stored locally).
+- **Delete propagation** - deletions sync correctly across all devices.
 
 ## Quick Start
 
