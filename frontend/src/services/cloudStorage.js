@@ -278,23 +278,24 @@ class CloudStorageService {
         if (localEntries.length > 0) {
           await this.uploadEntries(localEntries, passphrase)
         }
-        return { entries: localEntries, action: 'uploaded' }
+        return { entries: localEntries, action: 'uploaded', hasChanges: false }
       }
 
       const cloudEntries = cloudResult.entries || []
 
-      // Merge entries (latest version wins)
-      const mergedEntries = this._mergeEntries(localEntries, cloudEntries)
+      // Merge entries (respects tombstones for proper delete propagation)
+      const mergeResult = this._mergeEntries(localEntries, cloudEntries)
 
       // Upload merged entries
-      await this.uploadEntries(mergedEntries, passphrase)
+      await this.uploadEntries(mergeResult.entries, passphrase)
 
       return {
-        entries: mergedEntries,
+        entries: mergeResult.entries,
         action: 'merged',
         localCount: localEntries.length,
         cloudCount: cloudEntries.length,
-        mergedCount: mergedEntries.length
+        mergedCount: mergeResult.entries.length,
+        hasChanges: mergeResult.hasChanges
       }
     } catch (error) {
       console.error('Sync failed:', error)
@@ -305,35 +306,70 @@ class CloudStorageService {
   /**
    * Merge local and cloud entries
    * Strategy: Keep all unique entries, for duplicates keep the newer version
+   * TOMBSTONE HANDLING: deleted entries are properly propagated
    */
   _mergeEntries(local, cloud) {
     const entriesMap = new Map()
+    let hasChanges = false
 
     // Add cloud entries first
     for (const entry of cloud) {
       entriesMap.set(entry.id, entry)
     }
 
-    // Override with local entries if they're newer or same age (local wins ties)
+    // Merge local entries with proper tombstone handling
     for (const entry of local) {
       const existing = entriesMap.get(entry.id)
-      // Use getTime() for robust comparison
       const entryTime = new Date(entry.timestamp).getTime()
 
       if (!existing) {
+        // New entry from local
         entriesMap.set(entry.id, entry)
+        hasChanges = true
       } else {
         const existingTime = new Date(existing.timestamp).getTime()
-        // If local is newer OR equal, keep local (User preference for local edits)
-        if (entryTime >= existingTime) {
-          entriesMap.set(entry.id, entry)
+
+        // TOMBSTONE HANDLING: Properly propagate deletions
+        if (entry.deleted && !existing.deleted) {
+          // Local has tombstone, cloud doesn't - tombstone wins if same age or newer
+          if (entryTime >= existingTime) {
+            entriesMap.set(entry.id, entry)
+            hasChanges = true
+          }
+        } else if (!entry.deleted && existing.deleted) {
+          // Cloud has tombstone, local doesn't - cloud tombstone wins unless local is strictly newer
+          if (entryTime > existingTime) {
+            entriesMap.set(entry.id, entry)
+            hasChanges = true
+          }
+          // Otherwise keep cloud tombstone (existing stays)
+        } else {
+          // Same deleted status - newer wins, local wins ties
+          if (entryTime >= existingTime) {
+            entriesMap.set(entry.id, entry)
+            // Only mark as changed if data actually differs
+            if (entryTime > existingTime) {
+              hasChanges = true
+            }
+          }
         }
       }
     }
 
+    // Check if cloud had entries that local didn't (means we need to update local)
+    for (const entry of cloud) {
+      const localEntry = local.find(e => e.id === entry.id)
+      if (!localEntry) {
+        hasChanges = true
+        break
+      }
+    }
+
     // Convert back to array and sort by timestamp (newest first)
-    return Array.from(entriesMap.values())
+    const entries = Array.from(entriesMap.values())
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+
+    return { entries, hasChanges }
   }
 
   /**

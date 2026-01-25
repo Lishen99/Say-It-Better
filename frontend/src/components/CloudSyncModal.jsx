@@ -29,19 +29,25 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
   // Check cloud availability and auto-login on mount
   useEffect(() => {
     const init = async () => {
-      // Try to auto-login from sessionStorage if not already connected
+      // Try to auto-login from localStorage if not already connected
       if (!cloudStorage.isAuthenticated) {
-        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
+        // Try localStorage first (persistent), then sessionStorage (session-only)
+        const storedAuth = localStorage.getItem('sayitbetter_auth') || sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           try {
             const { username: storedUser, passphrase: storedPass } = JSON.parse(storedAuth)
             await cloudStorage.initialize(storedUser, storedPass)
             setMode('connected')
             setConnectedUsername(storedUser)
+            // Ensure both storages are in sync
+            localStorage.setItem('sayitbetter_auth', storedAuth)
+            sessionStorage.setItem('sayitbetter_auth', storedAuth)
             setSuccess('Restored connection from saved credentials')
           } catch (e) {
             console.error('Auto-login failed', e)
-            sessionStorage.removeItem('sayitbetter_auth') // Clear invalid creds
+            // Clear invalid creds from both storages
+            localStorage.removeItem('sayitbetter_auth')
+            sessionStorage.removeItem('sayitbetter_auth')
           }
         }
       }
@@ -111,11 +117,13 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
       // Initialize cloud storage with username and passphrase
       await cloudStorage.initialize(username, exactPassphrase)
 
-      // Save credentials for auto-login
-      localStorage.setItem('sayitbetter_auth', JSON.stringify({
+      // Save credentials for persistence (localStorage) and current session (sessionStorage)
+      const authData = JSON.stringify({
         username: username,
         passphrase: exactPassphrase
-      }))
+      })
+      localStorage.setItem('sayitbetter_auth', authData)
+      sessionStorage.setItem('sayitbetter_auth', authData)
 
       // Sync entries using the exact same passphrase
       const result = await cloudStorage.syncEntries(entries || [], exactPassphrase)
@@ -140,10 +148,11 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
     setIsLoading(true)
 
     try {
-      // Get passphrase from local storage if not in state (for auto-login case)
+      // Get passphrase from storage if not in state (for auto-login case)
       let currentPassphrase = passphrase
       if (!currentPassphrase) {
-        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
+        // Try localStorage first (persistent), then sessionStorage
+        const storedAuth = localStorage.getItem('sayitbetter_auth') || sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           currentPassphrase = JSON.parse(storedAuth).passphrase
         }
@@ -168,6 +177,8 @@ export default function CloudSyncModal({ isOpen, onClose, onSync, entries }) {
 
   const handleDisconnect = () => {
     cloudStorage.disconnect()
+    // Clear from both storages
+    localStorage.removeItem('sayitbetter_auth')
     sessionStorage.removeItem('sayitbetter_auth')
     setUsername('')
     setPassphrase('')

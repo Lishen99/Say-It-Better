@@ -57,13 +57,16 @@ function App() {
       setHistory(activeEntries)
       setStorageReady(true)
 
-      // Auto-connect to cloud if credentials exist (session only)
-      const storedAuth = sessionStorage.getItem('sayitbetter_auth')
+      // Auto-connect to cloud if credentials exist (localStorage = persistent, sessionStorage = session)
+      const storedAuth = localStorage.getItem('sayitbetter_auth') || sessionStorage.getItem('sayitbetter_auth')
       if (storedAuth) {
         try {
           const { username, passphrase } = JSON.parse(storedAuth)
           await cloudStorage.initialize(username, passphrase)
           setIsCloudConnected(true)
+
+          // Ensure both storages are in sync for this session
+          sessionStorage.setItem('sayitbetter_auth', storedAuth)
 
           // Initial Sync on load
           // IMPORTANT: Must use getAllEntries() because 'entries' state is still empty [] at this point!
@@ -74,7 +77,7 @@ function App() {
             // Update state with result (merged)
             const resultList = synced.entries
 
-            // Save any new cloud items to local
+            // Save all entries to local (including tombstones from cloud)
             for (const entry of resultList) {
               await storage.saveEntry(entry)
             }
@@ -159,20 +162,21 @@ function App() {
 
     const syncLoop = setInterval(async () => {
       try {
-        const storedAuth = sessionStorage.getItem('sayitbetter_auth')
+        // Try localStorage first (persistent), then sessionStorage
+        const storedAuth = localStorage.getItem('sayitbetter_auth') || sessionStorage.getItem('sayitbetter_auth')
         if (storedAuth) {
           const { passphrase } = JSON.parse(storedAuth)
-          // Sync ALL entries (including tombstones)
+          // Sync ALL entries (including tombstones for delete propagation)
           const currentHistoryAll = await storage.getAllEntries()
           const result = await cloudStorage.syncEntries(currentHistoryAll, passphrase)
 
-          // Only update state if we got new data merged from cloud
-          if (result && (result.mergedCount > currentHistoryAll.length || result.isNew)) {
-            // Save merged data
+          // Update state if there were changes (hasChanges properly detects deletions too)
+          if (result && (result.hasChanges || result.isNew)) {
+            // Save merged data (including tombstones)
             for (const entry of result.entries) {
               await storage.saveEntry(entry)
             }
-            // Update UI with only active entries
+            // Update UI with only active (non-deleted) entries
             const active = await storage.getActiveEntries()
             setHistory(active)
           }
