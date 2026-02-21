@@ -12,6 +12,13 @@ import urllib.error
 # Groq API endpoint (OpenAI-compatible)
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 
+
+def get_clean_env(name: str, default: str = "") -> str:
+    value = os.environ.get(name, default)
+    if value is None:
+        return default
+    return value.strip().strip('"').strip("'")
+
 # System prompt
 SYSTEM_PROMPT = """You are a language assistant that helps people express their thoughts more clearly. Your ONLY purpose is to rewrite emotional or unstructured text into clear, neutral, respectful language.
 
@@ -56,8 +63,8 @@ class handler(BaseHTTPRequestHandler):
         """Handle translation request"""
         try:
             # Get Groq API key from environment
-            groq_api_key = os.environ.get("GROQ_API_KEY")
-            groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+            groq_api_key = get_clean_env("GROQ_API_KEY")
+            groq_model = get_clean_env("GROQ_MODEL", "llama-3.3-70b-versatile")
             
             # Check for required env vars
             if not groq_api_key:
@@ -124,7 +131,10 @@ JSON Response:"""
                 data=request_data,
                 headers={
                     "Authorization": f"Bearer {groq_api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "User-Agent": "SayItBetter/1.0 (+https://vercel.app)",
+                    "Connection": "close"
                 }
             )
             
@@ -170,9 +180,13 @@ JSON Response:"""
             self.send_header('Content-Type', 'application/json')
             self._send_cors_headers()
             self.end_headers()
+            hint = None
+            if e.code == 403 and "1010" in error_body:
+                hint = "Groq request blocked (Cloudflare 1010). Re-save GROQ_API_KEY in Vercel without quotes/spaces, redeploy, and ensure server sends User-Agent header."
             self.wfile.write(json.dumps({
                 "error": f"AI service error: {e.code}",
-                "details": error_body
+                "details": error_body,
+                "hint": hint
             }).encode())
         except json.JSONDecodeError as je:
             self.send_response(500)
