@@ -4,10 +4,11 @@ An AI-powered emotional translation tool that helps people clearly express how t
 
 **[Live Demo](https://say-it-better-zeta.vercel.app/)**
 
-![TechNation Hackathon 2026](https://img.shields.io/badge/TechNation-Hackathon%202026-brightgreen)
 ![AI + Healthcare](https://img.shields.io/badge/AI-Healthcare%20%26%20Wellness-blue)
 ![React](https://img.shields.io/badge/React-18-61dafb)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)
+![Groq](https://img.shields.io/badge/Groq-Llama%203.3-orange)
+![License](https://img.shields.io/badge/License-Proprietary-red)
 
 ## Problem Statement
 
@@ -91,7 +92,8 @@ When you enable cloud sync:
 
 - Node.js 18+ 
 - Python 3.9+
-- TELUS AI API credentials
+- **Groq API Key** (free): [console.groq.com](https://console.groq.com)
+- **Hugging Face Token** (free, optional): [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 
 ### Backend Setup
 
@@ -114,7 +116,7 @@ pip install -r requirements.txt
 copy .env.example .env   # Windows
 # or: cp .env.example .env  # macOS/Linux
 
-# Edit .env with your TELUS AI credentials
+# Edit .env with your Groq API key
 
 # Run the server
 uvicorn app.main:app --reload --port 8000
@@ -136,18 +138,16 @@ Open http://localhost:5173 in your browser.
 
 ## API Configuration
 
-The backend requires TELUS AI endpoints. Configure in `backend/.env`:
+The backend uses **free AI APIs**. Configure in `backend/.env`:
 
 ```env
-# TELUS AI - Gemma 3 27B Model (for text translation)
-GEMMA_ENDPOINT=https://your-gemma-endpoint.paas.ai.telus.com
-GEMMA_TOKEN=your_gemma_api_token_here
-GEMMA_MODEL=google/gemma-3-27b-it
+# Groq API (FREE) - Get key at https://console.groq.com
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
 
-# TELUS AI - Qwen Embedding Model (for theme analysis)
-QWEN_EMB_ENDPOINT=https://your-qwen-endpoint.paas.ai.telus.com
-QWEN_EMB_TOKEN=your_qwen_api_token_here
-QWEN_EMB_MODEL=Qwen/Qwen3-Embedding-8B
+# Hugging Face (FREE, optional) - For embeddings
+# Get token at https://huggingface.co/settings/tokens
+HF_TOKEN=your_huggingface_token_here
 ```
 
 > **Security Note:** Never commit `.env` to version control. It is already included in `.gitignore`.
@@ -186,8 +186,8 @@ say-it-better/
 | | Python 3.9+ | Runtime |
 | | httpx | Async HTTP client |
 | | pydantic | Data validation |
-| **AI** | Gemma-3-27B | Text translation (TELUS AI) |
-| | Qwen Embeddings | Theme similarity (TELUS AI) |
+| **AI** | Groq (Llama 3.3 70B) | Text translation (FREE) |
+| | Hugging Face | Embeddings (FREE) |
 | **Storage** | IndexedDB | Local browser storage |
 | | Redis Cloud | E2E encrypted cloud storage |
 
@@ -248,13 +248,16 @@ This project is configured for deployment on **Vercel** with serverless function
    - **IMPORTANT:** Leave **Root Directory** empty (or set to `.`) - do NOT set it to `frontend`
    - Add **Environment Variables** in the Vercel dashboard:
      ```
-     GEMMA_ENDPOINT=https://your-gemma-endpoint.paas.ai.telus.com
-     GEMMA_TOKEN=your_gemma_api_token_here
-     QWEN_EMB_ENDPOINT=https://your-qwen-endpoint.paas.ai.telus.com
-     QWEN_EMB_TOKEN=your_qwen_api_token_here
+     # LLM API (FREE)
+     GROQ_API_KEY=your_groq_api_key_here
+     
+     # Embeddings (FREE, optional)
+     HF_TOKEN=your_huggingface_token_here
      
      # For E2E Encrypted Cloud Sync (Redis Cloud)
-     STORAGE_KV_REDIS_URL=redis://user:password@host:port
+     REDIS_HOST=your_redis_host
+     REDIS_PORT=6379
+     REDIS_PASSWORD=your_redis_password
      ```
    - Click "Deploy"
 

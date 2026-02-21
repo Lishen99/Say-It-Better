@@ -1,6 +1,6 @@
 """
 Say It Better - Vercel Serverless API
-Translation endpoint that securely uses environment variables for API keys
+Translation endpoint using Groq API (free, fast inference)
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -8,6 +8,9 @@ import json
 import os
 import urllib.request
 import urllib.error
+
+# Groq API endpoint (OpenAI-compatible)
+GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 
 # System prompt
 SYSTEM_PROMPT = """You are a language assistant that helps people express their thoughts more clearly. Your ONLY purpose is to rewrite emotional or unstructured text into clear, neutral, respectful language.
@@ -52,20 +55,19 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Handle translation request"""
         try:
-            # Get env vars inside the handler (not at module level for Vercel)
-            gemma_endpoint = os.environ.get("GEMMA_ENDPOINT")
-            gemma_token = os.environ.get("GEMMA_TOKEN")
-            gemma_model = os.environ.get("GEMMA_MODEL", "google/gemma-3-27b-it")
+            # Get Groq API key from environment
+            groq_api_key = os.environ.get("GROQ_API_KEY")
+            groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
             
             # Check for required env vars
-            if not gemma_endpoint or not gemma_token:
+            if not groq_api_key:
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({
-                    "error": "API not configured. Set GEMMA_ENDPOINT and GEMMA_TOKEN in Vercel environment variables.",
-                    "debug": f"endpoint_exists: {bool(gemma_endpoint)}, token_exists: {bool(gemma_token)}"
+                    "error": "API not configured. Set GROQ_API_KEY in Vercel environment variables.",
+                    "setup": "Get your free API key at https://console.groq.com"
                 }).encode())
                 return
 
@@ -87,12 +89,9 @@ class handler(BaseHTTPRequestHandler):
                 }).encode())
                 return
 
-            # Build prompt
-            full_prompt = f"""{SYSTEM_PROMPT}
-
+            # Build user prompt
+            user_prompt = f"""Please rewrite the following text into clear, neutral language.
 {get_tone_instruction(tone)}
-
-Please rewrite the following text into clear, neutral language.
 
 Original text:
 \"\"\"{raw_text}\"\"\"
@@ -109,19 +108,22 @@ Respond ONLY with valid JSON matching this exact structure:
 
 JSON Response:"""
 
-            # Call TELUS AI
+            # Call Groq API (OpenAI-compatible chat format)
             request_data = json.dumps({
-                "model": gemma_model,
-                "prompt": full_prompt,
+                "model": groq_model,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt}
+                ],
                 "temperature": 0.7,
                 "max_tokens": 1000
             }).encode('utf-8')
             
             req = urllib.request.Request(
-                f"{gemma_endpoint}/v1/completions",
+                GROQ_ENDPOINT,
                 data=request_data,
                 headers={
-                    "Authorization": f"Bearer {gemma_token}",
+                    "Authorization": f"Bearer {groq_api_key}",
                     "Content-Type": "application/json"
                 }
             )
@@ -129,7 +131,8 @@ JSON Response:"""
             with urllib.request.urlopen(req, timeout=60) as response:
                 result = json.loads(response.read().decode('utf-8'))
             
-            content = result["choices"][0]["text"]
+            # Groq uses chat format - content is in message
+            content = result["choices"][0]["message"]["content"]
             
             # Parse JSON from response
             if "```json" in content:

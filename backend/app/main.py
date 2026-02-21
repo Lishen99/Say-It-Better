@@ -128,14 +128,11 @@ def get_tone_instruction(tone: str) -> str:
 
 
 async def call_ai_model(raw_text: str, tone: str = "neutral") -> dict:
-    """Call the Gemma-3 27B model to translate emotional text."""
+    """Call the Groq API (Llama 3.3 70B) to translate emotional text."""
     
-    # Build the full prompt (since we're using completions API, not chat)
-    full_prompt = f"""{SYSTEM_PROMPT}
-
+    # Build the user prompt
+    user_prompt = f"""Please rewrite the following text into clear, neutral language.
 {get_tone_instruction(tone)}
-
-Please rewrite the following text into clear, neutral language.
 
 Original text:
 \"\"\"{raw_text}\"\"\"
@@ -155,14 +152,17 @@ JSON Response:"""
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
-                f"{GEMMA_ENDPOINT}/v1/completions",
+                GROQ_ENDPOINT,
                 headers={
-                    "Authorization": f"Bearer {GEMMA_TOKEN}",
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": GEMMA_MODEL,
-                    "prompt": full_prompt,
+                    "model": GROQ_MODEL,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prompt}
+                    ],
                     "temperature": 0.7,
                     "max_tokens": 1000
                 }
@@ -173,7 +173,7 @@ JSON Response:"""
                 raise HTTPException(status_code=502, detail="AI service unavailable")
             
             result = response.json()
-            content = result["choices"][0]["text"]
+            content = result["choices"][0]["message"]["content"]
             
             # Parse JSON from response
             # Handle potential markdown code blocks
@@ -272,27 +272,30 @@ Your text is processed only for the current request and is not stored or used fo
 
 
 async def get_embeddings(texts: List[str]) -> List[List[float]]:
-    """Get embeddings from Qwen embedding model for theme similarity detection."""
+    """Get embeddings from Hugging Face API for theme similarity detection."""
     try:
+        headers = {"Content-Type": "application/json"}
+        if HF_TOKEN:
+            headers["Authorization"] = f"Bearer {HF_TOKEN}"
+        
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
-                f"{QWEN_EMB_ENDPOINT}/v1/embeddings",
-                headers={
-                    "Authorization": f"Bearer {QWEN_EMB_TOKEN}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": QWEN_EMB_MODEL,
-                    "input": texts
-                }
+                HF_ENDPOINT,
+                headers=headers,
+                json={"inputs": texts}
             )
+            
+            if response.status_code == 503:
+                # Model is loading, wait and retry
+                raise HTTPException(status_code=503, detail="Model is loading, please try again in a few seconds")
             
             if response.status_code != 200:
                 print(f"Embedding API Error: {response.status_code} - {response.text}")
                 raise HTTPException(status_code=502, detail="Embedding service unavailable")
             
             result = response.json()
-            return [item["embedding"] for item in result["data"]]
+            # HF returns embeddings directly as list of lists
+            return result
             
     except Exception as e:
         print(f"Embedding Error: {e}")
