@@ -152,6 +152,8 @@ HF_TOKEN=your_huggingface_token_here
 
 > **Security Note:** Never commit `.env` to version control. It is already included in `.gitignore`.
 
+> **Important:** Save API keys in Vercel exactly as raw values (no quotes, no extra spaces, no trailing newlines).
+
 ## Project Structure
 
 ```
@@ -250,6 +252,7 @@ This project is configured for deployment on **Vercel** with serverless function
      ```
      # LLM API (FREE)
      GROQ_API_KEY=your_groq_api_key_here
+    GROQ_MODEL=llama-3.3-70b-versatile
      
      # Embeddings (FREE, optional)
      HF_TOKEN=your_huggingface_token_here
