@@ -68,7 +68,7 @@ function Footer() {
 
         {/* Copyright */}
         <div className="mt-4 text-center text-xs text-gray-600">
-          <p>Built with care for TechNation Hackathon 2026</p>
+          <p>Copyright © 2026 Lishen M. Amaraweera. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
